@@ -1,0 +1,21 @@
+{
+    "name": "VSCode Blazor Explorer",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "VARIANT": "8.0"
+        }
+    },
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.blazorwasm-companion",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+    ],
+    "forwardPorts": [5000, 5001],
+    "postCreateCommand": "dotnet restore",
+    "remoteUser": "vscode"
+}

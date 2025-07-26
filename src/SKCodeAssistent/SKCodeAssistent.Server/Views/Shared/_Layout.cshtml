@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VSCode Chat Interface</title>
+    <style>
+        :root {
+            --vscode-background: #1e1e1e;
+            --vscode-foreground: #cccccc;
+            --vscode-input-background: #3c3c3c;
+            --vscode-input-border: #464647;
+            --vscode-button-background: #0e639c;
+            --vscode-button-hover: #1177bb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--vscode-background);
+            color: var(--vscode-foreground);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-height: 100vh;
+        }
+
+        .messages-area {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border-bottom: 1px solid var(--vscode-input-border);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .message.user {
+            background-color: var(--vscode-button-background);
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.assistant {
+            background-color: var(--vscode-input-background);
+            margin-right: auto;
+        }
+
+        .message-header {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .message-content {
+            line-height: 1.4;
+        }
+
+        .input-area {
+            padding: 15px;
+            background-color: var(--vscode-input-background);
+            border-top: 1px solid var(--vscode-input-border);
+        }
+
+        .mode-selector {
+            margin-bottom: 10px;
+        }
+
+        .mode-selector label {
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        .mode-selector select {
+            background-color: var(--vscode-background);
+            color: var(--vscode-foreground);
+            border: 1px solid var(--vscode-input-border);
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            background-color: var(--vscode-background);
+            color: var(--vscode-foreground);
+            border: 1px solid var(--vscode-input-border);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: none;
+            min-height: 40px;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: var(--vscode-button-background);
+        }
+
+        .send-button {
+            background-color: var(--vscode-button-background);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 60px;
+        }
+
+        .send-button:hover {
+            background-color: var(--vscode-button-hover);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Markdown styling */
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin: 8px 0 4px 0;
+        }
+
+        .message-content p {
+            margin: 4px 0;
+        }
+
+        .message-content code {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .message-content pre {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .message-content ul, .message-content ol {
+            margin-left: 20px;
+            margin: 8px 0 8px 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        @RenderBody()
+    </div>
+  
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SemanticKernel" />
+		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" />
+		<PackageReference Include="Microsoft.SemanticKernel.Agents.Magentic" />
+		<PackageReference Include="Microsoft.SemanticKernel.Agents.Orchestration" />
+		<PackageReference Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" />
+		<PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
+		<PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
+		<PackageReference Include="ModelContextProtocol" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\SKCodeAssistent\SKCodeAssistent.ServiceDefaults\SKCodeAssistent.ServiceDefaults.csproj" />
+	</ItemGroup>
+
+
+</Project>

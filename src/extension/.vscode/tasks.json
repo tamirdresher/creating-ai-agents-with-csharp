@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "watch",
+            "problemMatcher": "$tsc-watch",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "never"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "label": "npm: watch"
+        },
+        {
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "${workspaceFolder}/../BlazorApp/Server/Server.csproj"
+            ],
+            "problemMatcher": "$msCompile",
+            "label": "Run Blazor Server",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "Start All",
+            "dependsOn": [
+                "npm: watch",
+                "Run Blazor Server"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
