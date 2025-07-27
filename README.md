@@ -36,7 +36,7 @@ Progressive exercises to build your skills:
 
 ## 🚀 Quick Start
 
-1. **Prerequisites**: .NET 8 SDK, Node.js 18+, AI model access
+1. **Prerequisites**: .NET 9 SDK, Node.js 18+, AI model access
 2. **Configuration**: Set up your AI model credentials
 3. **Run**: Start the Aspire Host project to launch the backend
 4. **Explore**: Work through the notebooks and assignments

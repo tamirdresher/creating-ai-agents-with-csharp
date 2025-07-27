@@ -23,7 +23,7 @@ Work through these notebooks in order to build your understanding progressively:
 ## 🛠️ Setup Requirements
 
 ### Prerequisites
-- .NET 8 SDK or later
+- .NET 9 SDK or later
 - Jupyter notebook environment with .NET Interactive kernel
 - AI model access (Azure OpenAI, GitHub Models, or local LLM)
 

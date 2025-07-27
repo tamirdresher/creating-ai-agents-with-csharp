@@ -24,7 +24,7 @@ The workshop is built in way where you extend the functionality of the backend u
 ## 🚀 Quick Start
 
 ### Prerequisites
-- .NET 8 SDK
+- .NET 9 SDK
 - Node.js 18+
 - AI Model - Served from Azure OpenAI or GitHub markeplace ([instructions](Using_GitHub_Models.md)). You can also use a local model (With LM Studio, Ollama, Local Foundry etc) but be aware that these will perform well with the complex tasks
 
