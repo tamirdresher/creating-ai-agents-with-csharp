@@ -1,4 +1,4 @@
-# Semantic Kernel C# Workshop
+# Creating AI Applications and Agents with C# - Semantic Kernel C# Workshop
 
 A comprehensive workshop for building AI applications and agents using Microsoft's Semantic Kernel framework in C#.
 
