@@ -1,0 +1,41 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "compile",
+            "path": "src/extension/",
+            "group": "build",
+            "presentation": {
+                "panel": "shared"
+            },
+            "problemMatcher": "$tsc"
+        },
+        {
+            "label": "Start SKCodeAssistent Server",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["run"],
+            "options": {
+                "cwd": "${workspaceFolder}/src/SKCodeAssistent/SKCodeAssistent.AppHost"
+            },
+            "group": "build",
+            "presentation": {
+                "panel": "new",
+                "reveal": "always"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "custom",
+                "pattern": {
+                    "regexp": "^$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*Now listening on.*$",
+                    "endsPattern": "^.*Application started.*$"
+                }
+            }
+        }
+    ]
+}

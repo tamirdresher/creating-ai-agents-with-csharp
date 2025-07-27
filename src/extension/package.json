@@ -1,0 +1,126 @@
+{
+  "name": "vscode-ai-coding-assistant",
+  "displayName": "AI Coding Assistant",
+  "description": "VSCode extension for AI-powered coding assistance with workspace synchronization",
+  "version": "0.0.1",
+  "publisher": "vscode-ai-coding-assistant",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/vscode-ai-coding-assistant.git"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiCodingAssistant.openAssistant",
+        "title": "🤖 Open AI Coding Assistant",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "aiCodingAssistant.createArchitecturalPlan",
+        "title": "🏗️ Create Architectural Plan",
+        "icon": "$(preview)"
+      },
+      {
+        "command": "aiCodingAssistant.implementFeature",
+        "title": "💻 Implement Feature",
+        "icon": "$(add)"
+      },
+      {
+        "command": "aiCodingAssistant.runTests",
+        "title": "🧪 Run Tests with AI",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "aiCodingAssistant.debugIssue",
+        "title": "🔍 Debug Issue",
+        "icon": "$(debug)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "aiCodingAssistant.openAssistant",
+          "title": "AI Coding Assistant: Open Assistant"
+        },
+        {
+          "command": "aiCodingAssistant.createArchitecturalPlan",
+          "title": "AI Coding Assistant: Create Architectural Plan"
+        },
+        {
+          "command": "aiCodingAssistant.implementFeature",
+          "title": "AI Coding Assistant: Implement Feature"
+        },
+        {
+          "command": "aiCodingAssistant.runTests",
+          "title": "AI Coding Assistant: Run Tests with AI"
+        },
+        {
+          "command": "aiCodingAssistant.debugIssue",
+          "title": "AI Coding Assistant: Debug Issue"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "aiCodingAssistant.implementFeature",
+          "group": "aiAssistant@1",
+          "when": "resourceExtname == .cs || resourceExtname == .ts || resourceExtname == .js || resourceExtname == .razor"
+        },
+        {
+          "command": "aiCodingAssistant.debugIssue",
+          "group": "aiAssistant@2",
+          "when": "resourceExtname == .cs || resourceExtname == .ts || resourceExtname == .js || resourceExtname == .razor"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AI Coding Assistant",
+      "properties": {      
+        "aiCodingAssistant.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:50535",
+          "description": "Backend API URL for workspace synchronization"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish",
+    "start-server": "cd ../BlazorApp/Server && dotnet run",
+    "start-all": "concurrently \"npm run watch\" \"npm run start-server\""
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.2.5",
+    "@types/vscode": "^1.80.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "@vscode/test-electron": "^2.3.2",
+    "@vscode/vsce": "^2.19.0",
+    "concurrently": "^8.2.0",
+    "eslint": "^8.41.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "@typespec/compiler": "^1.1.0"
+  }
+}

@@ -1,0 +1,341 @@
+@{
+	Layout = "_Layout";
+	ViewData["Title"] = "AI Agents Workshop";
+}
+
+<style>
+	html, body {
+		height: 100%;
+		margin: 0;
+		padding: 0;
+	}
+
+	#legacyInterface {
+		display: flex !important;
+		flex-direction: column;
+		height: 100vh;
+		width: 100vw;
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 1000;
+	}
+
+	.workspace-path-area {
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid #dee2e6;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.workspace-path-input {
+		flex: 1 1 auto;
+		min-width: 200px;
+		max-width: 400px;
+	}
+
+	.workspace-path-btn {
+		flex-shrink: 0;
+	}
+
+	.set-context-link {
+		position: fixed;
+		bottom: 70px;
+		right: 30px;
+		z-index: 2000;
+		color: #007bff;
+		border-radius: 4px;
+		padding: 0.5em 1em;
+		cursor: pointer;
+		font-size: 1em;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+		display: none;
+	}
+
+	.messages-area {
+		flex: 1 1 auto;
+		overflow-y: auto;
+		padding: 1rem;
+		border-bottom: 1px solid #dee2e6;
+	}
+
+	.input-area {
+		flex-shrink: 0;
+		padding: 0.75rem 1rem 1rem 1rem;
+		border-top: 1px solid #dee2e6;
+		position: sticky;
+		bottom: 0;
+		z-index: 10;
+	}
+
+	.input-row {
+		display: flex;
+		gap: 0.5rem;
+		align-items: flex-end;
+	}
+
+	.message-input {
+		flex: 1 1 auto;
+		min-height: 38px;
+		max-height: 120px;
+		resize: none;
+	}
+
+	.send-button {
+		flex-shrink: 0;
+		height: 38px;
+	}
+
+	.message {
+		margin-bottom: 1rem;
+		padding: 0.75rem 1rem;
+		border-radius: 0.5rem;
+		max-width: 600px;
+		word-break: break-word;
+	}
+
+		.message.user {
+			align-self: flex-end;
+		}
+
+		.message.assistant {
+			align-self: flex-start;
+		}
+
+	.message-header {
+		font-size: 0.9rem;
+		font-weight: bold;
+		margin-bottom: 0.25rem;
+	}
+
+	.message-content {
+		font-size: 1rem;
+	}
+</style>
+
+<div id="legacyInterface">
+	<div class="workspace-path-area" id="workspacePathArea">
+		<label for="workspacePathInput" style="margin-right:0.5rem;">Workspace Path:</label>
+		<input id="workspacePathInput" class="workspace-path-input" type="text" placeholder="Enter workspace path..." />
+		<button class="workspace-path-btn btn btn-primary" onclick="setWorkspacePath()">Set</button>
+		<span id="workspacePathStatus" style="margin-left:0.5rem;font-size:0.95em;"></span>
+	</div>
+	<div class="messages-area" id="messagesArea">
+		<!-- Chat messages will be dynamically added here -->
+	</div>
+
+	<div class="input-area">
+		<div class="mode-selector">
+			<label for="modeSelect">Mode:</label>
+			<select id="modeSelect" name="mode">
+				<option value="Architect">Architect</option>
+				<option value="Coder" selected>Coder</option>
+				<option value="Tester">Tester</option>
+				<option value="DevTeam">Dev Team</option>
+			</select>
+			<!-- Plus button for new session -->
+			<button id="newSessionButton" title="New Chat Session" style="margin-left:1em; font-size:1.2em; padding:0 0.7em;">+</button>
+		</div>
+
+		<div class="input-row">
+			<textarea id="messageInput"
+					  class="message-input"
+					  placeholder="Type your message here..."
+					  rows="2"></textarea>
+			<button id="sendButton" class="send-button" onclick="sendMessage()">Send</button>
+		</div>
+	</div>
+
+	<a id="setContextLink" class="set-context-link" onclick="showWorkspacePathArea()">Set Context</a>
+
+@section Scripts {
+		<script>
+			// --- SessionId logic ---
+			function generateSessionId() {
+				return crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+			}
+			function getSessionId() {
+				let sessionId = localStorage.getItem('chatSessionId');
+				if (!sessionId) {
+					sessionId = generateSessionId();
+					localStorage.setItem('chatSessionId', sessionId);
+				}
+				return sessionId;
+			}
+			function setSessionId(sessionId) {
+				localStorage.setItem('chatSessionId', sessionId);
+			}
+			let lastSessionId = getSessionId();
+
+			// --- Chat logic ---
+			const messageInput = document.getElementById('messageInput');
+			messageInput.addEventListener('input', function() {
+				this.style.height = 'auto';
+				this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+			});
+			messageInput.addEventListener('keydown', function(e) {
+				if (e.key === 'Enter' && !e.shiftKey) {
+					e.preventDefault();
+					sendMessage();
+				}
+			});
+
+			async function sendMessage() {
+				const messageInput = document.getElementById('messageInput');
+				const modeSelect = document.getElementById('modeSelect');
+				const sendButton = document.getElementById('sendButton');
+				const messagesArea = document.getElementById('messagesArea');
+				const message = messageInput.value.trim();
+				const mode = modeSelect.value;
+				const sessionId = getSessionId();
+				if (!message) {
+					return;
+				}
+				sendButton.disabled = true;
+				sendButton.textContent = 'Sending...';
+				addMessage('user', 'User', mode, message);
+				messageInput.value = '';
+				messageInput.style.height = 'auto';
+				if (window.currentEventSource) {
+					window.currentEventSource.close();
+				}
+				window.currentEventSource = new EventSource(`/api/agent/stream?sessionId=${encodeURIComponent(sessionId)}&message=${encodeURIComponent(message)}&mode=${encodeURIComponent(mode)}`);
+				window.currentEventSource.addEventListener('done', (e) => {
+					sendButton.disabled = false;
+					sendButton.textContent = 'Send';
+					window.currentEventSource.close();
+				});
+				window.currentEventSource.onmessage = function(event) {
+					try {
+						const data = JSON.parse(event.data);
+						addMessage('assistant', data.author, mode, data.content);
+					} catch (e) {
+						addMessage('assistant', 'System', mode, 'Error parsing response.');
+					}
+				};
+				window.currentEventSource.onerror = function() {
+					addMessage('assistant', 'System', mode, 'Sorry, there was an error receiving the response.');
+					sendButton.disabled = false;
+					sendButton.textContent = 'Send';
+					window.currentEventSource.close();
+				};
+				window.currentEventSource.onopen = function() {
+					// Re-enable send button when connection opens
+				};
+			}
+
+			function addMessage(sender, author, mode, content) {
+				const messagesArea = document.getElementById('messagesArea');
+				const messageDiv = document.createElement('div');
+				messageDiv.className = `message ${sender}`;
+				const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+				const senderName = sender === 'user' ? 'You' : author;
+				messageDiv.innerHTML = `
+							<div class="message-header">${author} • ${mode} Mode • ${timestamp}</div>
+						<div class="message-content">${formatMessage(content)}</div>
+						`;
+				messagesArea.appendChild(messageDiv);
+				messagesArea.scrollTop = messagesArea.scrollHeight;
+			}
+
+			function formatMessage(content) {
+				content = content.replace(/\n/g, '<br>');
+				content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+				content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+				content = content.replace(/`(.*?)`/g, '<code>$1</code>');
+				return content;
+			}
+
+			// --- New session logic ---
+			document.getElementById('newSessionButton').addEventListener('click', async function() {
+				const oldSessionId = getSessionId();
+				const newSessionId = generateSessionId();
+				setSessionId(newSessionId);
+				lastSessionId = newSessionId;
+				// Remove all chat messages
+				const messagesArea = document.getElementById('messagesArea');
+				messagesArea.innerHTML = '';
+				// Remove old session from server
+				try {
+					await fetch(`/api/agent/session?sessionId=${encodeURIComponent(oldSessionId)}`, { method: 'DELETE' });
+				} catch {}
+			});
+
+			// Set workspace path via API
+			async function setWorkspacePath() {
+				const input = document.getElementById('workspacePathInput');
+				const status = document.getElementById('workspacePathStatus');
+				const area = document.getElementById('workspacePathArea');
+				const setContextLink = document.getElementById('setContextLink');
+				const path = input.value.trim();
+				if (!path) {
+					status.textContent = 'Please enter a path.';
+					status.style.color = 'red';
+					return;
+				}
+				status.textContent = 'Setting...';
+				status.style.color = '#333';
+				try {
+					const response = await fetch('/api/workspace/path', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ Path: path })
+					});
+					if (response.ok) {
+						status.textContent = 'Workspace path set!';
+						status.style.color = 'green';
+						setTimeout(function() {
+							area.style.display = 'none';
+							setContextLink.style.display = 'block';
+						}, 800);
+					} else {
+						const err = await response.text();
+						status.textContent = 'Error: ' + err;
+						status.style.color = 'red';
+					}
+				} catch (e) {
+					status.textContent = 'Network error.';
+					status.style.color = 'red';
+				}
+			}
+
+			// Show workspace path area when clicking the link
+			function showWorkspacePathArea() {
+				document.getElementById('workspacePathArea').style.display = 'flex';
+				document.getElementById('setContextLink').style.display = 'none';
+			}
+
+			// Focus on input when page loads
+			document.addEventListener('DOMContentLoaded', function() {
+				const messageInput = document.getElementById('messageInput');
+				if (messageInput) {
+					messageInput.focus();
+				}
+				// Always scroll to bottom on load
+				const messagesArea = document.getElementById('messagesArea');
+				if (messagesArea) {
+					messagesArea.scrollTop = messagesArea.scrollHeight;
+				}
+			});
+
+			document.addEventListener('DOMContentLoaded', function() {
+				const params = new URLSearchParams(window.location.search);
+				if (params.get('vscode') === 'true') {
+					const workspacePathArea = document.getElementById('workspacePathArea');
+					const setContextLink = document.getElementById('setContextLink');
+					if (workspacePathArea) workspacePathArea.style.display = 'none';
+					if (setContextLink) setContextLink.style.display = 'none';
+				}
+				// Existing code for focusing messageInput and scrolling messagesArea...
+				const messageInput = document.getElementById('messageInput');
+				if (messageInput) {
+					messageInput.focus();
+				}
+				const messagesArea = document.getElementById('messagesArea');
+				if (messagesArea) {
+					messagesArea.scrollTop = messagesArea.scrollHeight;
+				}
+			});
+		</script>
+}
