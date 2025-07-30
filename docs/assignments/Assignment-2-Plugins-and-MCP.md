@@ -17,22 +17,22 @@ Continue implementing your solution in:
 ### 2. Plugin Development
 
 
-**IMPORTANT**: All plugins must implement the `IPlugin` interface for dependency injection to work properly.
+**IMPORTANT**: All plugins must implement the [`IKernelPlugin`](../../src/SKCodeAssistent/SKCodeAssistent.Server/Plugins/IKernelPlugin.cs) interface for dependency injection to work properly.
 
 ```csharp
-// Ensure your plugins implement IPlugin
+// Ensure your plugins implement IKernelPlugin
 public interface IPlugin
 {
     // Plugin identification and metadata
 }
 
 // Your plugins should look like:
-public class FileSystemPlugin : IPlugin
+public class FileSystemPlugin : IKernelPlugin
 {
     // Implementation
 }
 
-public class CommandExecutionPlugin : IPlugin  
+public class CommandExecutionPlugin : IKernelPlugin  
 {
     // Implementation
 }
