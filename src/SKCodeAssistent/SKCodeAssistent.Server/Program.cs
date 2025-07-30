@@ -112,7 +112,7 @@ builder.Services.AddTransient<ICodingAssistentSession, CodingAssistentSession>()
 //builder.Services.AddTransient<ICodingAssistentSession, CodingAssistentSession_MagenticOrchestration>();
 
 // Custom orchestration implementation - shows advanced agent coordination
-builder.Services.AddTransient<ICodingAssistentSession, CodingAssistentSession_CustomOrchestration>();
+//builder.Services.AddTransient<ICodingAssistentSession, CodingAssistentSession_CustomOrchestration>();
 
 // ========================================
 // Plugin Registration (Educational)
@@ -121,10 +121,10 @@ builder.Services.AddTransient<ICodingAssistentSession, CodingAssistentSession_Cu
 // Uncomment these lines when using plugin-enabled implementations:
 
 // File operations plugin - enables agents to read, write, and manipulate files
-builder.Services.AddSingleton<IKernelPlugin, FileOperationsPlugin>();
+//builder.Services.AddSingleton<IKernelPlugin, FileOperationsPlugin>();
 
 // Command execution plugin - allows agents to execute system commands
-builder.Services.AddSingleton<IKernelPlugin, CommandExecutionPlugin>();
+//builder.Services.AddSingleton<IKernelPlugin, CommandExecutionPlugin>();
 
 // ========================================
 // Logging Configuration
