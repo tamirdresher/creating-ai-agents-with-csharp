@@ -24,9 +24,30 @@ The workshop is built in way where you extend the functionality of the backend u
 ## 🚀 Quick Start
 
 ### Prerequisites
-- .NET 9 SDK
-- Node.js 18+
-- AI Model - Served from Azure OpenAI or GitHub markeplace ([instructions](Using_GitHub_Models.md)). You can also use a local model (With LM Studio, Ollama, Local Foundry etc) but be aware that these will perform well with the complex tasks
+- **.NET 9 SDK** - Required for building and running the project
+- **Node.js 18+** - For VS Code extension development
+- **.NET Aspire 13.0** - Latest version for cloud-native orchestration
+- **Semantic Kernel 1.67.1** - Latest stable version with enhanced agent capabilities
+- **AI Model** - Served from Azure OpenAI or GitHub marketplace ([instructions](Using_GitHub_Models.md)). You can also use a local model (With LM Studio, Ollama, Local Foundry etc) but be aware that these will perform well with the complex tasks
+
+### What's New in This Version
+
+**🚀 Updated to Latest Versions:**
+- .NET Aspire upgraded from 9.3.1 to **13.0.0**
+- Semantic Kernel upgraded from 1.61.0 to **1.67.1**
+- All packages updated to latest stable versions
+
+**🆕 New Learning Content:**
+- **Agent-to-Agent (A2A) Protocol** - Standardized communication between AI agents
+- **Process Framework** - Event-driven business process orchestration
+- **Human-in-the-Loop (HITL)** - Patterns for human oversight in AI workflows
+- **Guardrails & AI Safety** - Control mechanisms, filters, and safety patterns
+- **Additional Orchestration Patterns** - Aggregator, Reducer, Scatter-Gather, Pipeline
+
+**📚 New Notebooks:**
+- [Notebook 6: A2A Protocol](../notebooks/6-Agent-to-Agent-Protocol.ipynb)
+- [Notebook 7: Process Framework & HITL](../notebooks/7-Process-Framework-and-HITL.ipynb)
+- [Notebook 8: Guardrails & AI Safety](../notebooks/8-Guardrails-and-AI-Safety.ipynb)
 
 
 

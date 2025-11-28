@@ -4,22 +4,32 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.61.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.61.0" />
+    <!-- Updated Semantic Kernel packages from 1.61.0 to 1.67.1 -->
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.67.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.67.1" />
+    <!-- Preview packages - keeping current versions as they are not found in public sources -->
     <PackageVersion Include="Microsoft.SemanticKernel.Agents.Magentic" Version="1.60.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Agents.Orchestration" Version="1.60.0-preview" />
     <PackageVersion Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" Version="1.60.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.61.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.61.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.67.1" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.67.1" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.7.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.3.1" />
+    <!-- Updated Aspire packages from 9.3.1 to 13.0.0 -->
+    <!-- Note: Microsoft.Extensions.ServiceDiscovery max version is 10.0.0 as of now -->
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.3.1" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0-preview.6.25358.103" />
+    <!-- Microsoft.Extensions.AI packages -->
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="9.7.1" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="9.7.1" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.7.1-preview.1.25365.4" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="2.5.0-beta.1" />
+    <PackageVersion Include="Azure.Core" Version="1.49.0" />
     <PackageVersion Include="ModelContextProtocol" Version="0.3.0-preview.3" />
   </ItemGroup>
 </Project>
