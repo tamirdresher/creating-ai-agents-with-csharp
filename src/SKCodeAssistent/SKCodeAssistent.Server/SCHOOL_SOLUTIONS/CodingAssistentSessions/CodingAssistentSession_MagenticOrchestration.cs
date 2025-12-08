@@ -383,8 +383,8 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
         // This enables agents to access Microsoft documentation and learning resources
         await AddMCPPluginAsync(kernel,
             "MSDocs",
-            new SseClientTransport(
-                new SseClientTransportOptions
+            new HttpClientTransport(
+                new() 
                 {
                     Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
                 }));
@@ -400,7 +400,7 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
     async Task AddMCPPluginAsync(Kernel kernel, string name, IClientTransport clientTransport)
     {
         // Create MCP client using the provided transport
-        var mcpClient = await McpClientFactory.CreateAsync(clientTransport);
+        var mcpClient = await McpClient.CreateAsync(clientTransport);
 
         // Discover available tools from the MCP server
         var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);

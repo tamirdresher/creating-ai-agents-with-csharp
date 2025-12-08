@@ -1,4 +1,4 @@
-@host = http://localhost:5062
+@host = http://localhost:65366
 
 ### Query agent card for the Semantic Kernel agent
 GET {{host}}/.well-known/agent-card.json

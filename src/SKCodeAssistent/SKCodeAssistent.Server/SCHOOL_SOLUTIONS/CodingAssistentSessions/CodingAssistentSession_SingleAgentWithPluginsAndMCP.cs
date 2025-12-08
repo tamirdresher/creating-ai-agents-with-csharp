@@ -154,8 +154,8 @@ public class CodingAssistentSession_SingleAgentWithPluginsAndMCP : ICodingAssist
 
         await AddMCPPluginAsync(kernel,
             "MSDocs",
-            new SseClientTransport(
-                new SseClientTransportOptions
+            new HttpClientTransport(
+                new()
                 {
                     Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
                 }));
@@ -165,7 +165,7 @@ public class CodingAssistentSession_SingleAgentWithPluginsAndMCP : ICodingAssist
 
     async Task AddMCPPluginAsync(Kernel kernel, string name, IClientTransport clientTransport)
     {
-        var mcpClient = await McpClientFactory.CreateAsync(clientTransport);
+        var mcpClient = await McpClient.CreateAsync(clientTransport);
 
         // Retrieve the list of tools available on the MCP server
         var tools = await mcpClient.ListToolsAsync().ConfigureAwait(false);

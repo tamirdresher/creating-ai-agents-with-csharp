@@ -72,7 +72,7 @@ public class DeveloperAssistant : IDisposable
 
             // Get the response from the agent
             var artifact = new Artifact();
-            await foreach (AgentResponseItem<ChatMessageContent> response in _agent.InvokeAsync(userMessage, cancellationToken: cancellationToken))
+            await foreach (AgentResponseItem<ChatMessageContent> response in Agent.InvokeAsync(userMessage, cancellationToken: cancellationToken))
             {
                 var content = response.Message.Content;
                 artifact.Parts.Add(new TextPart() { Text = content! });
@@ -117,7 +117,7 @@ public class DeveloperAssistant : IDisposable
 
         return Task.FromResult(new AgentCard()
         {
-            Name = "SK Travel Agent",
+            Name = "SK Coding Agent",
             Description = "Semantic Kernel-based developer assistant.",
             Url = agentUrl,
             Version = "1.0.0",
@@ -138,11 +138,13 @@ public class DeveloperAssistant : IDisposable
 
     public List<string> SupportedContentTypes { get; } = ["text", "text/plain"];
 
+    public ChatCompletionAgent Agent => _agent;
+
     private ChatCompletionAgent InitializeAgent()
     {
         try
         {   
-            var travelPlannerAgent = new ChatCompletionAgent()
+            var codingAssistantAgent = new ChatCompletionAgent()
             {
                 Kernel = _kernel,
                 Arguments = new KernelArguments(new PromptExecutionSettings()
@@ -152,7 +154,7 @@ public class DeveloperAssistant : IDisposable
 
             };
 
-            return travelPlannerAgent;
+            return codingAssistantAgent;
         }
         catch (Exception ex)
         {

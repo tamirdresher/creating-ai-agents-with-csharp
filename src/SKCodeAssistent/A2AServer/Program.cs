@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.A2A;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using SemanticKernelAgent;
@@ -37,6 +38,8 @@ builder.Services.AddTransient<DeveloperAssistant>(sp =>
 });
 var app = builder.Build();
 
+app.MapDefaultEndpoints();
+
 
 var configuration = app.Configuration;
 var httpClient = app.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
@@ -44,9 +47,12 @@ var logger = app.Logger;
 
 var agent = app.Services.GetService<DeveloperAssistant>();
 
-var taskManager = new TaskManager();
-agent.Attach(taskManager);
-app.MapA2A(taskManager, "/devAssist");
-app.MapWellKnownAgentCard(taskManager, "/devAssist");
+//var taskManager = new TaskManager();
+//agent.Attach(taskManager);
+
+var a2aHostAgent = new A2AHostAgent(agent.Agent, await DeveloperAssistant.GetAgentCardAsync("", CancellationToken.None));
+var taskManager = a2aHostAgent.TaskManager!;
+app.MapA2A(taskManager, "/");
+app.MapWellKnownAgentCard(taskManager, "/");
 
 await app.RunAsync();
