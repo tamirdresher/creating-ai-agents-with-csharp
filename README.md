@@ -12,12 +12,15 @@ This workshop teaches you how to create intelligent AI agents that can collabora
 Hands-on learning materials covering core concepts:
 
 - **[Introduction to Semantic Kernel](notebooks/1-SemanticKernel-Intro.ipynb)** - Get started with SK basics
-- **[Enhanced Introduction](notebooks/1-SemanticKernel-Intro-Enhanced.ipynb)** - Advanced introduction concepts
 - **[Semantic Kernel Agents](notebooks/2-SemanticKernel-Agents.ipynb)** - Building intelligent agents
-- **[Functions, Plugins & MCP](notebooks/3-Functions-Plugins-MCP.ipynb)** - Extending agent capabilities
+- **[Functions & Plugins](notebooks/3-Functions-Plugins.ipynb)** - Extending agent capabilities
 - **[OpenAPI Plugin](notebooks/3.1-OpenAPIPlugin.ipynb)** - Working with external APIs
+- **[Model Context Protocol (MCP)](notebooks/3.2-MCP.ipynb)** - Connecting agents to external systems
 - **[Multi-Agent Orchestration](notebooks/4-MultiAgent-Orchestration.ipynb)** - Coordinating multiple agents
 - **[Chat History Reducers](notebooks/5-ChatHistoryReducers.ipynb)** - Managing conversation context
+- **[Agent-to-Agent (A2A) Protocol](notebooks/6-Agent-to-Agent-Protocol.ipynb)** - 🆕 Standardized agent communication
+- **[Process Framework & HITL](notebooks/7-Process-Framework-and-HITL.ipynb)** - 🆕 Event-driven workflows with human oversight
+- **[Guardrails & AI Safety](notebooks/8-Guardrails-and-AI-Safety.ipynb)** - 🆕 Control mechanisms and safety filters
 
 ### 🏗️ SKCodeAssistent Project
 A complete AI coding assistant implementation with:
@@ -33,6 +36,8 @@ Progressive exercises to build your skills:
 - **[Assignment 1: Three Agents](docs/assignments/Assignment-1-Three-Agents.md)** - Create your first agent team
 - **[Assignment 2: Plugins and MCP](docs/assignments/Assignment-2-Plugins-and-MCP.md)** - Extend agents with external capabilities
 - **[Assignment 3: Team Orchestration](docs/assignments/Assignment-3-Team-Orchestration.md)** - Advanced multi-agent coordination
+- **[Assignment 4: A2A Protocol](docs/assignments/Assignment-4-A2A-Protocol.md)** - 🆕 Implement agent-to-agent communication
+- **[Assignment 5: Process Framework](docs/assignments/Assignment-5-Process-Framework.md)** - 🆕 Build event-driven workflows with HITL
 
 ## 🚀 Quick Start
 

@@ -1,0 +1,27 @@
+@host = http://localhost:65366
+
+### Query agent card for the Semantic Kernel agent
+GET {{host}}/.well-known/agent-card.json
+
+### Send a task to the Semantic Kernel agent
+POST {{host}}/devAssist
+Content-Type: application/json
+
+{
+    "id": "3",
+    "jsonrpc": "2.0",
+    "method": "message/send",
+    "params": {
+        "message": {
+            "kind": "message",
+            "messageId": "12345",
+            "role": "user",
+            "parts": [
+                {
+                    "kind": "text",
+                    "text": "How do i write to the console in red color in c#"
+                }
+            ]
+        }
+    }
+}

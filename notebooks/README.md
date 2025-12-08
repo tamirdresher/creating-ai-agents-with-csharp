@@ -9,16 +9,19 @@ Work through these notebooks in order to build your understanding progressively:
 ### 1. Foundation
 - **[0-AI-settings.ipynb](0-AI-settings.ipynb)** - Configure your AI model settings
 - **[1-SemanticKernel-Intro.ipynb](1-SemanticKernel-Intro.ipynb)** - Basic Semantic Kernel concepts
-- **[1-SemanticKernel-Intro-Enhanced.ipynb](1-SemanticKernel-Intro-Enhanced.ipynb)** - Advanced introduction topics
 
 ### 2. Agent Development
 - **[2-SemanticKernel-Agents.ipynb](2-SemanticKernel-Agents.ipynb)** - Creating and managing AI agents
-- **[3-Functions-Plugins-MCP.ipynb](3-Functions-Plugins-MCP.ipynb)** - Extending agents with functions and plugins
+- **[3-Functions-Plugins.ipynb](3-Functions-Plugins.ipynb)** - Extending agents with functions and plugins
 - **[3.1-OpenAPIPlugin.ipynb](3.1-OpenAPIPlugin.ipynb)** - Integrating with external APIs
+- **[3.2-MCP.ipynb](3.2-MCP.ipynb)** - Connecting agents to external systems using Model Context Protocol
 
 ### 3. Advanced Orchestration
 - **[4-MultiAgent-Orchestration.ipynb](4-MultiAgent-Orchestration.ipynb)** - Coordinating multiple agents
 - **[5-ChatHistoryReducers.ipynb](5-ChatHistoryReducers.ipynb)** - Managing conversation context
+- **[6-Agent-to-Agent-Protocol.ipynb](6-Agent-to-Agent-Protocol.ipynb)** - Standardized agent communication
+- **[7-Process-Framework-and-HITL.ipynb](7-Process-Framework-and-HITL.ipynb)** - Event-driven workflows with human oversight
+- **[8-Guardrails-and-AI-Safety.ipynb](8-Guardrails-and-AI-Safety.ipynb)** - Control mechanisms and safety filters
 
 ## 🛠️ Setup Requirements
 

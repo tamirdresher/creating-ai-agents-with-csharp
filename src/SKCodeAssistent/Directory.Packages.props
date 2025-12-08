@@ -3,23 +3,38 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Microsoft.SemanticKernel.Agents.A2A" Version="1.68.0-alpha" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.61.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.61.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Magentic" Version="1.60.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Orchestration" Version="1.60.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" Version="1.60.0-preview" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.61.0" />
-    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.61.0" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.7.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.3.1" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.12.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.12.0" />
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.3.1" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0-preview.6.25358.103" />
-    <PackageVersion Include="ModelContextProtocol" Version="0.3.0-preview.3" />
+    <!-- Updated Semantic Kernel packages from 1.61.0 to 1.67.1 -->
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.68.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Core" Version="1.68.0" />
+    <!-- Preview packages - keeping current versions as they are not found in public sources -->
+    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Magentic" Version="1.68.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Orchestration" Version="1.68.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" Version="1.68.0-preview" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.68.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.68.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Aspire.Hosting.Azure.AIFoundry" Version="13.0.2-preview.1.25603.5" />
+    <PackageVersion Include="A2A" Version="0.3.3-preview" />
+    <PackageVersion Include="A2A.AspNetCore" Version="0.3.3-preview" />
+    <PackageVersion Include="Aspire.Azure.AI.Inference" Version="13.0.2-preview.1.25603.5" />
+    <PackageVersion Include="Aspire.Azure.AI.OpenAI" Version="13.0.2-preview.1.25603.5" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0-preview.4.24267.6" />
+    <!-- Microsoft.Extensions.AI packages -->
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="9.7.1" />
+    <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="9.7.1" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="9.7.1-preview.1.25365.4" />
+    <PackageVersion Include="Azure.AI.OpenAI" Version="2.5.0-beta.1" />
+    <PackageVersion Include="Azure.Core" Version="1.49.0" />
+    <PackageVersion Include="ModelContextProtocol" Version="0.5.0-preview.1" />
   </ItemGroup>
 </Project>

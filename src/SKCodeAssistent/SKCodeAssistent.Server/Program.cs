@@ -114,6 +114,9 @@ builder.Services.AddTransient<ICodingAssistentSession, CodingAssistentSession>()
 // Custom orchestration implementation - shows advanced agent coordination
 //builder.Services.AddTransient<ICodingAssistentSession, CodingAssistentSession_CustomOrchestration>();
 
+// Custom orchestration with A2A remote agent
+builder.Services.AddTransient<ICodingAssistentSession, CodingAssistentSession_CustomOrchestrationWithA2A>();
+
 // ========================================
 // Plugin Registration (Educational)
 // ========================================

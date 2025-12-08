@@ -42,6 +42,9 @@ public class AgentConfiguration
     /// </summary>
     [Required]
     public AgentSettings Settings { get; set; } = new();
+
+    [Required]
+    public string RemoteDevAgentUrl { get; set; }
 }
 
 /// <summary>

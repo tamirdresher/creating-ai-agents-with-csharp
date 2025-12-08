@@ -1,11 +1,17 @@
 #pragma warning disable SKEXP0110 // Experimental APIs
 #pragma warning disable SKEXP0001 // Experimental APIs
 
+using A2A;
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
+using Microsoft.SemanticKernel.Agents.A2A;
 using Microsoft.SemanticKernel.Agents.Magentic;
+using Microsoft.SemanticKernel.Agents.Orchestration;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
+using Microsoft.SemanticKernel.Agents.Runtime;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI; // <-- Add this for OpenAIPromptExecutionSettings
@@ -14,26 +20,32 @@ using SKCodeAssistent.Server.Configuration;
 using SKCodeAssistent.Server.Plugins;
 using SKCodeAssistent.Server.SCHOOL_SOLUTIONS;
 using SKCodeAssistent.Server.SCHOOL_SOLUTIONS.Orchestration;
+using System;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
 
 namespace SKCodeAssistent.Server.Services;
 
-public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSession
+public class CodingAssistentSession_CustomOrchestrationWithA2A : ICodingAssistentSession
 {
     private readonly WorkspaceContextService _workspaceContext;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<CodingAssistentSession> _logger;
     private readonly List<IKernelPlugin> _plugins;
     private IOptions<AgentConfiguration> _agentConfiguration;
+    private Guid _id;
     private Kernel? _kernel;
     private ChatHistory? _history;
+    private Agent _remoteDevAgent;
     private AgentGroupChat? _groupChat;
     private ChatCompletionAgent? _architectAgent;
     private ChatCompletionAgent? _developerAgent;
     private ChatCompletionAgent? _testerAgent;
     private bool _initialized;
+    private A2AClient _a2aClient;
 
-    public CodingAssistentSession_CustomOrchestration(
+    public CodingAssistentSession_CustomOrchestrationWithA2A(
         WorkspaceContextService workspaceContext,
         IOptions<AgentConfiguration> agentConfiguration,
         ILoggerFactory loggerFactory,
@@ -51,6 +63,7 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
         _logger = logger;
         _plugins = plugins.ToList();
         _agentConfiguration = agentConfiguration;
+        _id = Guid.NewGuid();
     }
 
     public async Task InitializeAsync()
@@ -58,11 +71,21 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
         if (_initialized) return;
 
         _kernel = await InitializeKernelAsync();
-        
+
         _history = new ChatHistory();
         _architectAgent = AgentDefinitions.CreateArchitectAgent(_kernel.Clone());
         _developerAgent = AgentDefinitions.CreateDeveloperAgent(_kernel.Clone());
         _testerAgent = AgentDefinitions.CreateTesterAgent(_kernel.Clone());
+
+        var a2aAgentUrl = _agentConfiguration.Value.RemoteDevAgentUrl;
+
+        var httpClient = new HttpClient();
+        var url = new Uri(a2aAgentUrl);
+        _a2aClient = new A2AClient(url, httpClient);
+        var cardResolver = new A2ACardResolver(url, httpClient);
+        var agentCard = await cardResolver.GetAgentCardAsync();
+        _remoteDevAgent = new A2ARemoteAgent(new A2AAgent(_a2aClient, agentCard));
+
         _groupChat = new AgentGroupChat(_architectAgent, _developerAgent, _testerAgent);
         _groupChat.ExecutionSettings.TerminationStrategy.MaximumIterations = 15;
         _groupChat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
@@ -73,7 +96,7 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
         string userMessage,
         string mode,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {        
+    {
         var workspacePath = _workspaceContext.WorkspacePath;
         var activeDoc = _workspaceContext.ActiveDocumentPath;
         _logger.LogInformation("Processing user request with workspace: {WorkspacePath} ", workspacePath);
@@ -88,7 +111,7 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
                 var reducedHistory = await historyReducer.ReduceAsync(_history!, cancellationToken);
                 historySummary = $"Summary of chat so far: {reducedHistory?.FirstOrDefault()?.Content}";
             }
-            var contextualMessage = 
+            var contextualMessage =
                 $@"""
                 Working in workspace: {workspacePath}
                 Active Document: {activeDoc}
@@ -110,7 +133,8 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
                        MaximumInvocationCount = 15
                    },
                    _architectAgent!,
-                   _developerAgent!,
+                   //_developerAgent!,
+                   _remoteDevAgent,
                    _testerAgent!)
                {
                    ResponseCallback = orchestrationMonitor.ObserveResponseAsync,
@@ -143,7 +167,7 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
         }
         else
         {
-            var contextualMessage = 
+            var contextualMessage =
                 $@"""
                 Working in workspace: {workspacePath}
                 Active Document: {activeDoc}
@@ -154,10 +178,10 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
                 User Request: {userMessage}
                 """;
 
-            ChatCompletionAgent? agent = mode switch
+            Agent? agent = mode switch
             {
                 AssistentModes.Architect => _architectAgent,
-                AssistentModes.Coder => _developerAgent,
+                AssistentModes.Coder => _remoteDevAgent,
                 AssistentModes.Tester => _testerAgent,
                 _ => null
             };
@@ -167,13 +191,27 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
                 yield break;
             }
 
-            var agentThread = new ChatHistoryAgentThread(_history!);
-            _history!.AddUserMessage(contextualMessage);
-            
-            await foreach (var response in agent.InvokeAsync(agentThread, cancellationToken: cancellationToken))
+            if ((agent is A2AAgent) || (agent is A2ARemoteAgent))
             {
-                yield return response;
+                var agentThread = new A2AAgentThread(_a2aClient!, _id.ToString());
+                _history!.AddUserMessage(contextualMessage);
+
+                await foreach (var response in agent.InvokeAsync(_history.ToList(), cancellationToken: cancellationToken))
+                {
+                    yield return response;
+                }
             }
+            else
+            {
+                var agentThread = new ChatHistoryAgentThread(_history!);
+                _history!.AddUserMessage(contextualMessage);
+
+                await foreach (var response in agent.InvokeAsync(agentThread, cancellationToken: cancellationToken))
+                {
+                    yield return response;
+                }
+            }
+
         }
     }
 
@@ -199,7 +237,7 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
         builder.Services.AddSingleton(_loggerFactory);
 
         var agentConfig = _agentConfiguration.Value;
-        
+
         if (!string.IsNullOrEmpty(agentConfig.AzureOpenAI.Endpoint) && !string.IsNullOrEmpty(agentConfig.AzureOpenAI.ApiKey))
         {
             builder.AddAzureOpenAIChatCompletion(deploymentName: agentConfig.AzureOpenAI.ModelId, endpoint: agentConfig.AzureOpenAI.Endpoint, apiKey: agentConfig.AzureOpenAI.ApiKey);
@@ -212,9 +250,9 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
         {
             throw new InvalidOperationException("No valid AI service configuration found. Please check your application configuration.");
         }
-                
+
         var kernel = builder.Build();
-        
+
         foreach (var plugin in _plugins)
         {
             kernel.Plugins.AddFromObject(plugin);
@@ -239,8 +277,8 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
             "MSDocs",
             new HttpClientTransport(
                 new HttpClientTransportOptions
-                { 
-                    Endpoint = new Uri("https://learn.microsoft.com/api/mcp") 
+                {
+                    Endpoint = new Uri("https://learn.microsoft.com/api/mcp")
                 }));
 
 
@@ -257,5 +295,75 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
     }
 
 
+    public sealed class A2ARemoteAgent : Agent
+    {
+        
+        private readonly A2AAgent _a2AAgent;
+
+
+        public A2ARemoteAgent(A2AAgent a2AAgent)
+        {
+            
+            _a2AAgent = a2AAgent;
+            this.Name = a2AAgent.Name;
+            this.Description = a2AAgent.Description;
+        }
+
+       
+
+        public override IAsyncEnumerable<AgentResponseItem<ChatMessageContent>> InvokeAsync(ICollection<ChatMessageContent> messages, Microsoft.SemanticKernel.Agents.AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            StringBuilder fullMessage = new StringBuilder();
+            foreach(var msg in messages)
+            {
+                fullMessage.AppendLine($"Role: {msg.Role} Content:{msg.Content}");
+            }
+
+            try
+            {
+                return _a2AAgent.InvokeAsync(new ChatMessageContent(AuthorRole.User, fullMessage.ToString()), thread, options).Select(m => { m.Message.AuthorName = Name; return m; });
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        public override IAsyncEnumerable<AgentResponseItem<StreamingChatMessageContent>> InvokeStreamingAsync(ICollection<ChatMessageContent> messages, Microsoft.SemanticKernel.Agents.AgentThread? thread = null, AgentInvokeOptions? options = null, CancellationToken cancellationToken = default)
+        {
+            StringBuilder fullMessage = new StringBuilder();
+            foreach (var msg in messages)
+            {
+                fullMessage.AppendLine($"Role: {msg.Role} Content:{msg.Content}");
+            }
+            try
+            {
+                return _a2AAgent.InvokeStreamingAsync(new ChatMessageContent(AuthorRole.User, fullMessage.ToString()), thread, options).Select(m => { m.Message.AuthorName = Name; return m; });
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+
+        protected override Task<AgentChannel> CreateChannelAsync(CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException("A2AAgent is not for use with AgentChat.");
+        }
+
+        protected override IEnumerable<string> GetChannelKeys()
+        {
+            throw new NotSupportedException("A2AAgent is not for use with AgentChat.");
+        }
+
+        protected override Task<AgentChannel> RestoreChannelAsync(string channelState, CancellationToken cancellationToken)
+        {
+            throw new NotSupportedException("A2AAgent is not for use with AgentChat.");
+        }
+    }
 
 }
+
+
