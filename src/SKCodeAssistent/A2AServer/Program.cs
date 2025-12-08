@@ -1,57 +1,71 @@
 using A2A;
 using A2A.AspNetCore;
-using Azure.Identity;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
 using Microsoft.SemanticKernel.Agents.A2A;
-using OpenTelemetry.Resources;
-using OpenTelemetry.Trace;
-using SemanticKernelAgent;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-
 builder.AddAzureChatCompletionsClient(connectionName: "chat")
     .AddChatClient();
 
-//builder.AddAzureOpenAIClient(connectionName: "chat")
-//    .AddChatClient("chat");
+builder.Services.AddKernel();
 
-var kernelBuilder = builder.Services.AddKernel();
-
-//kernelBuilder.AddAzureOpenAIChatCompletion(
-//                   deploymentName: modelId,
-//                   endpoint: endpoint,
-//                   credentials: new DefaultAzureCredential());
-
-builder.Services.AddTransient<DeveloperAssistant>(sp =>
-{
-    var configuration = sp.GetRequiredService<IConfiguration>();
-    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient();
-    var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<DeveloperAssistant>>();
-    var kernel = sp.GetRequiredService<Kernel>();
-    return new DeveloperAssistant(kernel, configuration, httpClient, logger);
-});
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
+// Get kernel and create the agent
+var kernel = app.Services.GetRequiredService<Kernel>();
 
-var configuration = app.Configuration;
-var httpClient = app.Services.GetRequiredService<IHttpClientFactory>().CreateClient();
-var logger = app.Logger;
+var codingAgent = new ChatCompletionAgent()
+{
+    Kernel = kernel,
+    Arguments = new KernelArguments(new PromptExecutionSettings()
+    { 
+        FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() 
+    }),
+    Name = "DevAssistant",
+    Instructions = "You are a helpful assistant for developers.",
+};
 
-var agent = app.Services.GetService<DeveloperAssistant>();
+// Create the agent card
+var agentCard = new AgentCard()
+{
+    Name = "A2ACodingAgent",
+    Description = "Semantic Kernel-based developer assistant.",
+    Url = "",
+    Version = "1.0.0",
+    DefaultInputModes = ["text"],
+    DefaultOutputModes = ["text"],
+    Capabilities = new AgentCapabilities()
+    {
+        Streaming = false,
+        PushNotifications = false,
+    },
+    Skills =
+    [
+        new AgentSkill()
+        {
+            Id = "dev_assistant_sk",
+            Name = "Semantic Kernel Developer Assistant",
+            Description = "Handles comprehensive developer assistance, including code suggestions, debugging help, and API usage guidance.",
+            Tags = ["development", "assistance", "semantic-kernel"],
+            Examples =
+            [
+                "Help create a C# console application.",
+                "Create a sudoku game in html and javascript",
+            ],
+        }
+    ],
+};
 
-//var taskManager = new TaskManager();
-//agent.Attach(taskManager);
-
-var a2aHostAgent = new A2AHostAgent(agent.Agent, await DeveloperAssistant.GetAgentCardAsync("", CancellationToken.None));
+// Create A2A host agent and expose endpoints
+var a2aHostAgent = new A2AHostAgent(codingAgent, agentCard);
 var taskManager = a2aHostAgent.TaskManager!;
+
 app.MapA2A(taskManager, "/");
 app.MapWellKnownAgentCard(taskManager, "/");
 
