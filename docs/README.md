@@ -26,15 +26,15 @@ The workshop is built in way where you extend the functionality of the backend u
 ### Prerequisites
 - **.NET 9 SDK** - Required for building and running the project
 - **Node.js 18+** - For VS Code extension development
-- **.NET Aspire 13.0** - Latest version for cloud-native orchestration
-- **Semantic Kernel 1.67.1** - Latest stable version with enhanced agent capabilities
+- **.NET Aspire 13.0.2** - Latest version for cloud-native orchestration
+- **Semantic Kernel 1.68.0** - Latest stable version with enhanced agent capabilities
 - **AI Model** - Served from Azure OpenAI or GitHub marketplace ([instructions](Using_GitHub_Models.md)). You can also use a local model (With LM Studio, Ollama, Local Foundry etc) but be aware that these will perform well with the complex tasks
 
 ### What's New in This Version
 
 **🚀 Updated to Latest Versions:**
-- .NET Aspire upgraded from 9.3.1 to **13.0.0**
-- Semantic Kernel upgraded from 1.61.0 to **1.67.1**
+- .NET Aspire upgraded from 9.3.1 to **13.0.2**
+- Semantic Kernel upgraded from 1.61.0 to **1.68.0**
 - All packages updated to latest stable versions
 
 **🆕 New Learning Content:**

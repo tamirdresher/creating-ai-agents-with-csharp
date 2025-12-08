@@ -16,7 +16,6 @@ var foundry = builder.AddAzureAIFoundry("foundry")
 
 var chat = foundry.AddDeployment("chat", "phi-3.5-mini", "1", "Microsoft");
 
-
 var remoteAgent = builder.AddProject<Projects.A2AServer>("a2aDevAgent")    
     .WithReference(chat)
     .WaitFor(chat);
