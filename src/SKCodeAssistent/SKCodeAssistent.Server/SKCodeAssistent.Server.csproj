@@ -8,6 +8,7 @@
 
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.Agents.AI.DevUI" />
 		<PackageReference Include="Microsoft.SemanticKernel" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.A2A" />
 		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" />
