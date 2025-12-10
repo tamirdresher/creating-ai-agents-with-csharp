@@ -11,7 +11,7 @@ var openAIApiKey = builder.AddParameter("OpenAIApiKey", secret: true);
 
 
 
-builder.AddProject<Projects.SKCodeAssistent_Server>("server")
+var server = builder.AddProject<Projects.SKCodeAssistent_Server>("server")
     .WithEnvironment("AIAgents__AzureOpenAI__ModelId", azureAIModelId)
     .WithEnvironment("AIAgents__AzureOpenAI__Endpoint", azureAIEndpoint)
     .WithEnvironment("AIAgents__AzureOpenAI__ApiKey", azureAIApiKey)
