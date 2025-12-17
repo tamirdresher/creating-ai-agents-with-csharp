@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 var builder = DistributedApplication.CreateBuilder(args);
 
 // Add Azure Chat Service with Azure OpenAI
