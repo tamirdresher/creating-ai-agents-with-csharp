@@ -1,57 +1,130 @@
-# Creating AI Applications and Agents with C# - Semantic Kernel C# Workshop
+# Creating AI Agents with C# — Microsoft Agent Framework Workshop
 
-A comprehensive workshop for building AI applications and agents using Microsoft's Semantic Kernel framework in C#.
+> **Updated for Microsoft Agent Framework GA (v1.0.0 — April 2026)**
+>
+> This workshop was previously built on Semantic Kernel. It has been migrated to the
+> **Microsoft Agent Framework**, which unifies Semantic Kernel and AutoGen into a single,
+> stable API. See [MIGRATION.md](MIGRATION.md) for the full context and API mapping.
+
+A hands-on workshop for building AI agents in C# using the Microsoft Agent Framework,
+Microsoft.Extensions.AI, and .NET Aspire.
+
+---
 
 ## 📚 Workshop Overview
 
-This workshop teaches you how to create intelligent AI agents that can collaborate as a software development team. You'll learn to build an AI Coding Assistant capable of performing complex software development tasks through multi-agent orchestration.
+You will build an AI Coding Assistant step-by-step, starting with a single agent
+and progressing to a collaborative multi-agent system (Architect + Developer + Tester)
+with tool use, MCP integration, and Agent-to-Agent (A2A) communication.
+
+---
 
 ## 🎯 Learning Path
 
-### 📓 Interactive Notebooks
-Hands-on learning materials covering core concepts:
+### Console Samples (start here)
 
-- **[Introduction to Semantic Kernel](notebooks/1-SemanticKernel-Intro.ipynb)** - Get started with SK basics
-- **[Semantic Kernel Agents](notebooks/2-SemanticKernel-Agents.ipynb)** - Building intelligent agents
-- **[Functions & Plugins](notebooks/3-Functions-Plugins.ipynb)** - Extending agent capabilities
-- **[OpenAPI Plugin](notebooks/3.1-OpenAPIPlugin.ipynb)** - Working with external APIs
-- **[Model Context Protocol (MCP)](notebooks/3.2-MCP.ipynb)** - Connecting agents to external systems
-- **[Multi-Agent Orchestration](notebooks/4-MultiAgent-Orchestration.ipynb)** - Coordinating multiple agents
-- **[Chat History Reducers](notebooks/5-ChatHistoryReducers.ipynb)** - Managing conversation context
-- **[Agent-to-Agent (A2A) Protocol](notebooks/6-Agent-to-Agent-Protocol.ipynb)** - 🆕 Standardized agent communication
-- **[Process Framework & HITL](notebooks/7-Process-Framework-and-HITL.ipynb)** - 🆕 Event-driven workflows with human oversight
-- **[Guardrails & AI Safety](notebooks/8-Guardrails-and-AI-Safety.ipynb)** - 🆕 Control mechanisms and safety filters
+Self-contained console projects — no server required.
 
-### 🏗️ SKCodeAssistent Project
-A complete AI coding assistant implementation with:
-- **Backend Service** - ASP.NET Core application hosting AI agents
-- **VSCode Extension** - Integrated development environment support
-- **Multi-Agent System** - Architect, Developer, and Tester agents working together
+| Sample | What you learn |
+|---|---|
+| [`src/samples/01-BasicAgent`](src/samples/01-BasicAgent/) | Create an `AIAgent`, stream responses |
+| [`src/samples/02-AgentWithTools`](src/samples/02-AgentWithTools/) | Add `AIFunction` tools to an agent |
+| `src/samples/03-AgentWithMCP` *(coming soon)* | Connect to an MCP server |
+| `src/samples/04-MultiAgentWorkflow` *(coming soon)* | Wire agents with `WorkflowBuilder` |
+| `src/samples/05-A2ARemoteAgent` *(coming soon)* | Agent-to-Agent protocol |
 
-👉 **[View detailed project documentation](docs/README.md)**
+### Server Project (SKCodeAssistent)
 
-### 📝 Assignments
-Progressive exercises to build your skills:
+A production-style ASP.NET Core + Aspire server that hosts the coding assistant.
+Participants fill in the TODOs in `Services/CodingAssistentSession.cs`, then unlock
+progressively richer implementations from `SCHOOL_SOLUTIONS/`.
 
-- **[Assignment 1: Three Agents](docs/assignments/Assignment-1-Three-Agents.md)** - Create your first agent team
-- **[Assignment 2: Plugins and MCP](docs/assignments/Assignment-2-Plugins-and-MCP.md)** - Extend agents with external capabilities
-- **[Assignment 3: Team Orchestration](docs/assignments/Assignment-3-Team-Orchestration.md)** - Advanced multi-agent coordination
-- **[Assignment 4: A2A Protocol](docs/assignments/Assignment-4-A2A-Protocol.md)** - 🆕 Implement agent-to-agent communication
-- **[Assignment 5: Process Framework](docs/assignments/Assignment-5-Process-Framework.md)** - 🆕 Build event-driven workflows with HITL
+```
+src/SKCodeAssistent/
+├── SKCodeAssistent.AppHost/     ← .NET Aspire orchestrator
+├── SKCodeAssistent.Server/      ← ASP.NET Core API + agent logic
+│   ├── Services/                ← ICodingAssistentSession + template
+│   └── SCHOOL_SOLUTIONS/        ← Complete reference implementations
+└── SKCodeAssistent.ServiceDefaults/
+```
+
+### Assignments
+
+| # | Topic |
+|---|---|
+| 1 | [Three Agents](docs/assignments/Assignment-1-Three-Agents.md) |
+| 2 | [Tools and MCP](docs/assignments/Assignment-2-Plugins-and-MCP.md) |
+| 3 | [Team Orchestration](docs/assignments/Assignment-3-Team-Orchestration.md) |
+| 4 | [A2A Protocol](docs/assignments/Assignment-4-A2A-Protocol.md) |
+| 5 | [Process Framework & HITL](docs/assignments/Assignment-5-Process-Framework.md) |
+
+---
 
 ## 🚀 Quick Start
 
-1. **Prerequisites**: .NET 9 SDK, Node.js 18+, AI model access
-2. **Configuration**: Set up your AI model credentials
-3. **Run**: Start the Aspire Host project to launch the backend
-4. **Explore**: Work through the notebooks and assignments
+### Prerequisites
 
-👉 **[See complete setup instructions](docs/README.md#-quick-start)**
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9)
+- An OpenAI API key **or** a [GitHub Models](docs/Using_GitHub_Models.md) token
+- Node.js 18+ (for the VS Code extension)
 
-## 📖 Additional Resources
+### Option A — Console sample (fastest)
 
-- **[GitHub Models Setup Guide](docs/Using_GitHub_Models.md)** - Configure GitHub marketplace models
-- **[Notebook Learning Materials](notebooks/)** - Interactive Jupyter notebooks
-- **[Assignment Solutions](docs/assignments/)** - Guided exercises
+```bash
+cd src/samples/01-BasicAgent
+cp .env.example .env
+# edit .env → set OPENAI_API_KEY
+dotnet run
+```
 
+### Option B — Full server via Aspire
 
+```bash
+cd src/SKCodeAssistent
+dotnet run --project SKCodeAssistent.AppHost
+# Opens Aspire dashboard at https://localhost:15888
+```
+
+Configure credentials in `SKCodeAssistent.AppHost/appsettings.json`
+or via environment variables — see [docs/README.md](docs/README.md#configuration).
+
+---
+
+## 🔑 Agent Framework Quick Reference
+
+```csharp
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+using OpenAI;
+
+// 1. Chat client (works with OpenAI, Azure OpenAI, GitHub Models, Ollama…)
+IChatClient chatClient = new OpenAIClient(new ApiKeyCredential(apiKey))
+    .GetChatClient("gpt-4o")
+    .AsIChatClient();
+
+// 2. Create an agent with tools
+AIAgent agent = chatClient.AsAIAgent(
+    name: "Coder",
+    instructions: "You are an expert C# developer.",
+    tools: [AIFunctionFactory.Create(MyTool)]);
+
+// 3. Stream a response
+await foreach (string chunk in agent.RunStreamingAsync("Explain LINQ"))
+    Console.Write(chunk);
+
+// 4. Multi-agent workflow
+var workflow = new WorkflowBuilder(architectAgent)
+    .AddEdge(architectAgent, developerAgent)
+    .AddEdge(developerAgent, testerAgent)
+    .Build();
+```
+
+---
+
+## 📖 Resources
+
+- [Microsoft Agent Framework docs](https://learn.microsoft.com/agent-framework/)
+- [NuGet: Microsoft.Agents.AI](https://www.nuget.org/packages/Microsoft.Agents.AI)
+- [GitHub Models setup](docs/Using_GitHub_Models.md)
+- [Migration guide (SK → Agent Framework)](MIGRATION.md)
+- [Polyglot Notebooks archive](notebooks/DEPRECATED.md)

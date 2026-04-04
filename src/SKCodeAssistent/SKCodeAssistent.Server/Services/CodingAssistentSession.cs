@@ -1,164 +1,170 @@
 /*
- * SKCodeAssistent.Server - CodingAssistentSession.cs
+ * AICodeAssistant.Server - CodingAssistentSession.cs
  *
- * This file contains the base implementation of a coding assistant session.
- * It serves as a template and foundation for various implementations
- * that demonstrate different patterns of AI agent usage.
+ * Base template implementation of a coding assistant session using the
+ * Microsoft Agent Framework GA (v1.0.0, released April 2026).
  *
- * Note: This is a template implementation. See SCHOOL_SOLUTIONS folder for
- * complete working examples that demonstrate different architectural patterns.
+ * WORKSHOP TEMPLATE -- this file is intentionally minimal so participants
+ * can fill in the TODOs step by step.
+ *
+ * See SCHOOL_SOLUTIONS/ for complete, runnable reference implementations
+ * demonstrating each agent pattern.
+ *
+ * Key types:
+ *   IChatClient          -- Microsoft.Extensions.AI abstraction for chat models
+ *   AIAgent              -- Microsoft.Agents.AI high-level agent wrapper
+ *   AIFunctionFactory    -- creates tools from C# methods
+ *   AsAIAgent()          -- extension on IChatClient to create an AIAgent
+ *
+ * Quick reference:
+ *   AIAgent agent = chatClient.AsAIAgent(
+ *       name: "AgentName",
+ *       instructions: "...",
+ *       tools: [AIFunctionFactory.Create(MyTool)]);
+ *
+ *   string result = await agent.RunAsync("message");
+ *
+ *   await foreach (var chunk in agent.RunStreamingAsync("message"))
+ *       yield return new AgentMessage(chunk, agent.Name);
  */
 
-#pragma warning disable SKEXP0110 // Experimental APIs
-#pragma warning disable SKEXP0001 // Experimental APIs
-
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Chat;
-using Microsoft.SemanticKernel.Agents.Magentic;
-using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
-using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using ModelContextProtocol.Client;
 using SKCodeAssistent.Server.Configuration;
 using SKCodeAssistent.Server.Plugins;
-using SKCodeAssistent.Server.SCHOOL_SOLUTIONS;
-using SKCodeAssistent.Server.SCHOOL_SOLUTIONS.Orchestration;
+using SKCodeAssistent.Server.Services;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace SKCodeAssistent.Server.Services;
 
 /// <summary>
-/// Base implementation of a coding assistant session that provides the foundation
-/// for various AI agent configurations and orchestration patterns.
-///
-/// This class demonstrates the core components needed for agent-based coding assistance:
-/// - Workspace context integration
-/// - Plugin system for extending agent capabilities
-/// - Configuration management for AI services
-/// - Session lifecycle management
+/// Template implementation of <see cref="ICodingAssistentSession"/> using
+/// Microsoft Agent Framework v1.0 (GA).
 /// </summary>
 public class CodingAssistentSession : ICodingAssistentSession
-{   
+{
     private readonly WorkspaceContextService _workspaceContext;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<CodingAssistentSession> _logger;
-    private readonly List<IKernelPlugin> _plugins;
     private readonly IOptions<AgentConfiguration> _agentConfiguration;
-    
-    // Core AI components
-    private Kernel? _kernel; 
-    private bool _initialized;
-    
 
-    /// <summary>
-    /// Initializes a new instance of the CodingAssistentSession.
-    /// </summary>
-    /// <param name="workspaceContext">Service for managing VSCode workspace context</param>
-    /// <param name="agentConfiguration">Configuration for AI service providers</param>
-    /// <param name="loggerFactory">Factory for creating loggers</param>
-    /// <param name="logger">Logger instance for this session</param>
-    /// <param name="plugins">Collection of plugins to extend agent capabilities</param>
+    private IChatClient? _chatClient;
+    private AIAgent? _agent;
+    private bool _initialized;
+
     public CodingAssistentSession(
         WorkspaceContextService workspaceContext,
         IOptions<AgentConfiguration> agentConfiguration,
         ILoggerFactory loggerFactory,
-        ILogger<CodingAssistentSession> logger,
-        IEnumerable<IKernelPlugin> plugins)
+        ILogger<CodingAssistentSession> logger)
     {
         ArgumentNullException.ThrowIfNull(workspaceContext);
         ArgumentNullException.ThrowIfNull(agentConfiguration);
         ArgumentNullException.ThrowIfNull(loggerFactory);
         ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(plugins);
 
         _workspaceContext = workspaceContext;
+        _agentConfiguration = agentConfiguration;
         _loggerFactory = loggerFactory;
         _logger = logger;
-        _plugins = plugins.ToList();
-        _agentConfiguration = agentConfiguration;
     }
 
-    /// <summary>
-    /// Initializes the coding assistant session asynchronously.
-    /// This method sets up the AI kernel and prepares agents for use.
-    /// </summary>
+    /// <inheritdoc/>
     public async Task InitializeAsync()
     {
         if (_initialized) return;
 
-        _kernel = await InitializeKernelAsync();
+        _chatClient = CreateChatClient();
 
-        // TODO: Add initialization logic here for agents and chat history
-        // Example implementations can be found in SCHOOL_SOLUTIONS folder
-        
+        // TODO Workshop Step 1 -- Create your agent
+        //
+        //   _agent = _chatClient.AsAIAgent(
+        //       name: "CodingAssistant",
+        //       instructions: "You are an expert C# coding assistant. " +
+        //                     "The workspace is at: " + _workspaceContext.WorkspacePath,
+        //       tools: BuildTools());
+        //
+        // See SCHOOL_SOLUTIONS/CodingAssistentSessions/ for complete examples.
+
         _initialized = true;
+        await Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Processes a user request and returns an asynchronous stream of responses.
-    /// This method represents the core conversation flow of the coding assistant.
-    /// </summary>
-    /// <param name="userMessage">The user's input message</param>
-    /// <param name="mode">The assistant mode (architect, developer, tester, etc.)</param>
-    /// <param name="cancellationToken">Token for cancelling the operation</param>
-    /// <returns>Async enumerable of chat message responses</returns>
-    public async IAsyncEnumerable<ChatMessageContent> ProcessUserRequestAsync(
+    /// <inheritdoc/>
+    public async IAsyncEnumerable<AgentMessage> ProcessUserRequestAsync(
         string userMessage,
         string mode,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var workspacePath = _workspaceContext.WorkspacePath;
-        var workspaceSource = _workspaceContext.IsWorkspaceSet ? "VSCode" : "default";
-        
-        _logger.LogInformation("Processing user request with workspace: {WorkspacePath} (source: {Source})",
-            workspacePath, workspaceSource);
+        if (!_initialized)
+            throw new InvalidOperationException("Call InitializeAsync() before processing requests.");
 
-        // TODO: This is a placeholder implementation
-        // See SCHOOL_SOLUTIONS folder for complete working examples that demonstrate:
-        // - Agent selection based on mode
-        // - Conversation context management
-        // - Plugin integration
-        // - Multi-agent orchestration patterns
-        
-        yield return new ChatMessageContent(AuthorRole.User, "Not implemented yet");
+        _logger.LogInformation("Processing request | mode={Mode} | workspace={Workspace}",
+            mode, _workspaceContext.WorkspacePath);
+
+        // TODO Workshop Step 2 -- Stream your agent response
+        //
+        //   await foreach (var chunk in _agent!.RunStreamingAsync(userMessage, cancellationToken))
+        //       yield return new AgentMessage(chunk, _agent.Name);
+
+        yield return new AgentMessage(
+            "TODO: implement ProcessUserRequestAsync -- see SCHOOL_SOLUTIONS for reference.",
+            "CodingAssistant");
     }
 
-    /// <summary>
-    /// Initializes the Semantic Kernel with the configured AI service provider.
-    /// This method demonstrates how to configure different AI backends based on
-    /// the application configuration.
-    /// </summary>
-    /// <returns>Configured Semantic Kernel instance</returns>
-    private async Task<Kernel> InitializeKernelAsync()
+    // -- Private helpers --
+
+    private IChatClient CreateChatClient()
     {
-        // The configuration is expected to be set in appsettings.json, environment variables, or Aspire
-        var agentConfig = _agentConfiguration.Value;
-        
-        // TODO: Complete the kernel initialization based on configuration
-        // Example implementations show how to:
-        
-        if (!string.IsNullOrEmpty(agentConfig.AzureOpenAI.Endpoint) && !string.IsNullOrEmpty(agentConfig.AzureOpenAI.ApiKey))
+        var cfg = _agentConfiguration.Value;
+
+        if (!string.IsNullOrWhiteSpace(cfg.AzureOpenAI.Endpoint)
+            && !string.IsNullOrWhiteSpace(cfg.AzureOpenAI.ApiKey))
         {
-            // TODO: Configure Azure OpenAI service
-            // Example: builder.AddAzureOpenAIChatCompletion(deploymentName, endpoint, apiKey);
+            _logger.LogInformation("Using Azure OpenAI at {Endpoint}", cfg.AzureOpenAI.Endpoint);
+
+            // TODO Workshop (Azure path):
+            //   return new AzureOpenAIClient(
+            //       new Uri(cfg.AzureOpenAI.Endpoint),
+            //       new Azure.AzureKeyCredential(cfg.AzureOpenAI.ApiKey))
+            //       .GetChatClient(cfg.AzureOpenAI.DeploymentName)
+            //       .AsIChatClient();
         }
-        else if (!string.IsNullOrEmpty(agentConfig.OpenAI.Endpoint) && !string.IsNullOrEmpty(agentConfig.OpenAI.ModelId))
+        else if (!string.IsNullOrWhiteSpace(cfg.OpenAI.ApiKey)
+                 && !string.IsNullOrWhiteSpace(cfg.OpenAI.ModelId))
         {
-            // TODO: Configure OpenAI service (works with OpenAI API and GitHub Models)
-            // Example: builder.AddOpenAIChatCompletion(modelId, endpoint, apiKey);
+            _logger.LogInformation("Using OpenAI model {Model}", cfg.OpenAI.ModelId);
+
+            // TODO Workshop (OpenAI / GitHub Models path):
+            //   var options = string.IsNullOrWhiteSpace(cfg.OpenAI.Endpoint)
+            //       ? null
+            //       : new OpenAIClientOptions { Endpoint = new Uri(cfg.OpenAI.Endpoint) };
+            //   return new OpenAIClient(new ApiKeyCredential(cfg.OpenAI.ApiKey), options)
+            //       .GetChatClient(cfg.OpenAI.ModelId)
+            //       .AsIChatClient();
         }
         else
         {
-            throw new InvalidOperationException("No valid AI service configuration found. Please check your application configuration.");
+            throw new InvalidOperationException(
+                "No AI service configured. Set AzureOpenAI or OpenAI credentials " +
+                "in appsettings/environment/Aspire.");
         }
-        
-        // TODO: Build and return the kernel
-        // Example: return builder.Build();
-        
-        return null!; // Placeholder - see SCHOOL_SOLUTIONS for complete implementations
+
+        return null!; // unreachable -- TODO blocks above always return or throw
     }
+
+    private static IList<AIFunction> BuildTools()
+    {
+        return
+        [
+            AIFunctionFactory.Create(GetCurrentUtcTime),
+            // TODO: add more tools
+        ];
+    }
+
+    [Description("Returns the current date and time in UTC.")]
+    private static string GetCurrentUtcTime() =>
+        DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss zzz");
 }

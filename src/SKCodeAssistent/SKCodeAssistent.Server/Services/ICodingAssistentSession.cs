@@ -1,53 +1,48 @@
 ﻿/*
- * SKCodeAssistent.Server - ICodingAssistentSession.cs
+ * AICodeAssistant.Server - ICodingAssistentSession.cs
  *
- * This interface defines the contract for all coding assistant session implementations.
- * It provides a unified API for different agent patterns and orchestration strategies.
+ * Defines the contract for all coding assistant session implementations.
+ * Uses Microsoft.Extensions.AI abstractions — NO Semantic Kernel dependency.
+ *
+ * Migrated from Semantic Kernel to Microsoft Agent Framework GA (v1.0.0, April 2026).
  */
 
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Magentic;
-using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using SKCodeAssistent.Server.SCHOOL_SOLUTIONS;
-using SKCodeAssistent.Server.SCHOOL_SOLUTIONS.Orchestration;
-using System.Runtime.CompilerServices;
+using Microsoft.Extensions.AI;
 
 namespace SKCodeAssistent.Server.Services
 {
     /// <summary>
-    /// Defines the contract for coding assistant session implementations.
-    /// This interface provides a unified API for different agent patterns and orchestration strategies.
-    ///
+    /// Defines the contract for a coding assistant session.
+    /// Implementations wire up one or more <see cref="Microsoft.Agents.AI.AIAgent"/>
+    /// instances and return their streamed responses as <see cref="AgentMessage"/> chunks.
     /// </summary>
     public interface ICodingAssistentSession
     {
         /// <summary>
-        /// Initializes the coding assistant session asynchronously.        
+        /// Initialises the session — creates the agent(s), wires up tools / MCP servers, etc.
+        /// Call once before the first <see cref="ProcessUserRequestAsync"/> call.
         /// </summary>
-        /// <returns>A task representing the asynchronous initialization operation</returns>
         Task InitializeAsync();
 
         /// <summary>
-        /// Processes a user request and returns an asynchronous stream of chat responses.
-        /// This method handles the core interaction flow between users and AI agents.
-        ///
-        ///
-        /// The streaming approach allows for:
-        /// - Immediate response feedback to users
-        /// - Cancellation of long-running requests
-        /// - Progressive result delivery
-        /// - Better user experience in interactive scenarios
+        /// Processes a user request and streams back agent responses.
         /// </summary>
-        /// <param name="userMessage">The user's input message or request</param>
-        /// <param name="mode">The assistant mode determining behavior (e.g., "architect", "developer", "tester", "devteam")</param>
-        /// <param name="cancellationToken">Token for cancelling the operation if needed</param>
-        /// <returns>An asynchronous enumerable of chat message responses from the agent(s)</returns>
-        IAsyncEnumerable<ChatMessageContent> ProcessUserRequestAsync(
-           string userMessage,
-           string mode,
-           CancellationToken cancellationToken = default);
+        /// <param name="userMessage">Natural-language request from the user.</param>
+        /// <param name="mode">
+        /// Optional assistant mode that selects which agent to front
+        /// (e.g. "architect", "developer", "tester", "devteam").
+        /// </param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        IAsyncEnumerable<AgentMessage> ProcessUserRequestAsync(
+            string userMessage,
+            string mode,
+            CancellationToken cancellationToken = default);
     }
+
+    /// <summary>
+    /// A single streamed chunk from an agent.
+    /// </summary>
+    /// <param name="Content">The text fragment.</param>
+    /// <param name="AgentName">Which agent produced this chunk (null for single-agent sessions).</param>
+    public record AgentMessage(string Content, string? AgentName = null);
 }

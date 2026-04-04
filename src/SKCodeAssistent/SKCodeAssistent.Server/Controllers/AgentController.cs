@@ -47,7 +47,7 @@ public class AgentController : ControllerBase
     /// <param name="cancellationToken">Cancellation token for request cancellation</param>
     /// <returns>Server-Sent Event stream of agent responses</returns>
     [HttpGet("stream")]
-#pragma warning disable SKEXP0001 // Suppress SKEXP0001 warning for experimental Semantic Kernel APIs
+ // Suppress SKEXP0001 warning for experimental Semantic Kernel APIs
     public async Task StreamAgentChatAaync([FromQuery] Guid sessionId, [FromQuery] string message, [FromQuery] string mode, CancellationToken cancellationToken)
     {
         // Create activity for distributed tracing and monitoring
@@ -67,7 +67,7 @@ public class AgentController : ControllerBase
             if (!string.IsNullOrWhiteSpace(response.Content))
             {
                 // Serialize response as JSON with author and content information
-                var data = JsonSerializer.Serialize(new { author = response.AuthorName, content = response.Content });
+                var data = JsonSerializer.Serialize(new { author = response.AgentName, content = response.Content });
                 await Response.WriteAsync($"data: {data}\n\n");
                 await Response.Body.FlushAsync(); // Ensure immediate delivery
             }
@@ -77,7 +77,7 @@ public class AgentController : ControllerBase
         await Response.WriteAsync("event: done\ndata: {}\n\n");
         await Response.Body.FlushAsync();
     }
-#pragma warning restore SKEXP0001
+
 
     /// <summary>
     /// Removes a coding assistant session and cleans up associated resources.
@@ -92,3 +92,4 @@ public class AgentController : ControllerBase
         return NoContent();
     }
 }
+

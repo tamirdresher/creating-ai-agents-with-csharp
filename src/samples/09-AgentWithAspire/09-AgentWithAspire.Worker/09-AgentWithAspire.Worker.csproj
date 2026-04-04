@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>worker-09-AgentWithAspire</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Microsoft Agent Framework packages -->
+    <PackageReference Include="Microsoft.Agents.AI"         Version="1.0.0" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI"  Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.AI"     Version="10.4.0" />
+    <PackageReference Include="OpenAI"                      Version="2.9.1" />
+    <!-- OpenTelemetry for tracing and metrics (used by Aspire dashboard) -->
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting"              Version="1.11.2" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol"  Version="1.11.2" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore"      Version="1.11.1" />
+    <!-- Aspire service defaults integration -->
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery"         Version="9.2.0" />
+  </ItemGroup>
+</Project>

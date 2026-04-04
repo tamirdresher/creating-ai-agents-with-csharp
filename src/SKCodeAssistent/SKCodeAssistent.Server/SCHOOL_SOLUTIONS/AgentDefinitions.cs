@@ -1,33 +1,29 @@
-#pragma warning disable SKEXP0110 // Experimental APIs
-
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 
 namespace SKCodeAssistent.Server.SCHOOL_SOLUTIONS;
 
 /// <summary>
-/// Defines the three specialized agents: Architect, Developer, and Tester
+/// Defines the three specialized agents: Architect, Developer, and Tester.
+/// Migrated from Semantic Kernel ChatCompletionAgent to Microsoft Agent Framework AIAgent.
 /// </summary>
 public static class AgentDefinitions
 {
-    public static ChatCompletionAgent CreateArchitectAgent(Kernel kernel)
-    {
-        return new ChatCompletionAgent
-        {
-            Name = "SoftwareArchitect",
-            Description= "A professional software architecti who is an expert in software development and distributed systems.",
-            Instructions =
+    public static AIAgent CreateArchitectAgent(IChatClient chatClient, IEnumerable<AIFunction>? tools = null)
+        => chatClient.AsAIAgent(
+            name: "SoftwareArchitect",
+            description: "A professional software architect who is an expert in software development and distributed systems.",
+            instructions:
             """
             You are a Senior Software Architect with expertise in system design and planning.
             You have access to the current workspace and can analyze the existing codebase structure but only if the workspace is set.
 
             Your role is to:
             1. Analyze project requirements and create technical specifications
-            2. Design system architecture and component relationships  
+            2. Design system architecture and component relationships
             3. Plan implementation roadmaps with clear milestones
             4. Recommend best practices and design patterns
-            5. Don't attempt to write the code to the filesystem or create projects, you only deal with design, so you output should be diagrams, plan and sample code.
+            5. Don't attempt to write the code to the filesystem or create projects; you only deal with design, so your output should be diagrams, plans and sample code.
             6. If you are part of a team, collaborate with Developer and Tester agents to ensure successful delivery
 
             Guidelines:
@@ -38,22 +34,15 @@ public static class AgentDefinitions
             - Suggest appropriate technology stacks and frameworks
             - Document architectural decisions and trade-offs
 
-
             If you are part of a team, remember to collaborate effectively with the Developer agent for implementation details and the Tester agent for quality assurance planning.
             """,
-            Kernel = kernel,
-            Arguments = new KernelArguments(new PromptExecutionSettings{ FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),})
-            
-        };
-    }
-    
-    public static ChatCompletionAgent CreateDeveloperAgent(Kernel kernel)
-    {
-        return new ChatCompletionAgent
-        {
-            Name = "Developer", 
-            Description = "A Senior Software Developer with expertise in multiple programming languages and frameworks.",
-            Instructions =
+            tools: tools?.Cast<AITool>().ToList());
+
+    public static AIAgent CreateDeveloperAgent(IChatClient chatClient, IEnumerable<AIFunction>? tools = null)
+        => chatClient.AsAIAgent(
+            name: "Developer",
+            description: "A Senior Software Developer with expertise in multiple programming languages and frameworks.",
+            instructions:
             """
             You are a Senior Software Developer with expertise in multiple programming languages and frameworks.
             You have access to the current workspace and can read, write, and modify files, as well as execute commands.
@@ -76,18 +65,13 @@ public static class AgentDefinitions
 
             If you are working as part of a team, remember to collaborate with the Architect for design guidance and the Tester for ensuring code quality and test coverage.
             """,
-            Kernel = kernel,
-            Arguments = new KernelArguments(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
-        };
-    }
-    
-    public static ChatCompletionAgent CreateTesterAgent(Kernel kernel)
-    {
-        return new ChatCompletionAgent
-        {
-            Name = "Tester",
-            Description = "A Senior QA Engineer with expertise in testing, quality assurance, and debugging.",
-            Instructions =
+            tools: tools?.Cast<AITool>().ToList());
+
+    public static AIAgent CreateTesterAgent(IChatClient chatClient, IEnumerable<AIFunction>? tools = null)
+        => chatClient.AsAIAgent(
+            name: "Tester",
+            description: "A Senior QA Engineer with expertise in testing, quality assurance, and debugging.",
+            instructions:
             """
             You are a Senior QA Engineer with expertise in testing, quality assurance, and debugging.
             You have access to the current workspace and can run tests, analyze code quality, and execute debugging commands.
@@ -119,8 +103,5 @@ public static class AgentDefinitions
 
             If you are part of a team, remember to collaborate with the Developer for understanding implementation details and the Architect for understanding requirements and system behavior.
             """,
-            Kernel = kernel,
-            Arguments = new KernelArguments(new PromptExecutionSettings { FunctionChoiceBehavior = FunctionChoiceBehavior.Auto() })
-        };
-    }
+            tools: tools?.Cast<AITool>().ToList());
 }
