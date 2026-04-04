@@ -116,17 +116,15 @@ var groupChat = new AgentGroupChat(architectAgent, developerAgent, testerAgent)
 await foreach (var msg in groupChat.InvokeAsync()) { ... }
 
 // ✅ New (WorkflowBuilder)
-var workflow = new WorkflowBuilder(architectAgent)
-    .AddEdge(architectAgent, developerAgent)
-    .AddEdge(developerAgent, testerAgent)
-    .Build();
+var workflow = AgentWorkflowBuilder.BuildSequential([architectAgent, developerAgent, testerAgent]);
 
-StreamingRun run = await InProcessExecution.RunStreamingAsync(workflow, userMessage);
+StreamingRun run = await InProcessExecution.Default.RunStreamingAsync(
+    workflow, userMessage, null, cancellationToken);
 await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 await foreach (WorkflowEvent evt in run.WatchStreamAsync())
 {
     if (evt is AgentResponseUpdateEvent e)
-        Console.WriteLine($"{e.ExecutorId}: {e.Data}");
+        Console.WriteLine($"{e.Update.AgentId}: {e.Update.Text}");
 }
 ```
 
@@ -145,12 +143,14 @@ builder.AddOpenTelemetry()
 
 ---
 
-## What's not migrated yet (Phase 2)
+## Phase 2 complete
 
-The `SCHOOL_SOLUTIONS/` directory contains reference implementations that are **excluded
-from compilation** while the migration is in progress. See
-[SCHOOL_SOLUTIONS/MIGRATION_PENDING.md](src/SKCodeAssistent/SKCodeAssistent.Server/SCHOOL_SOLUTIONS/MIGRATION_PENDING.md)
-for the file-by-file migration checklist.
+The `SCHOOL_SOLUTIONS/` directory contains reference implementations that have been
+**fully migrated** to Agent Framework GA. All 12 files compile cleanly with 0 errors.
+Console samples 03–09 are also available in `src/samples/`.
+
+See [SCHOOL_SOLUTIONS/MIGRATION_PENDING.md](src/SKCodeAssistent/SKCodeAssistent.Server/SCHOOL_SOLUTIONS/MIGRATION_PENDING.md)
+for the complete migration map.
 
 ---
 

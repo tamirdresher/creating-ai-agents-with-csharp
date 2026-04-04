@@ -1,20 +1,19 @@
 /*
- * SKCodeAssistent.Server - CodingAssistentSession_MagenticOrchestration.cs
+ * SKCodeAssistent.Server - CodingAssistentSession_SingleAgentWithMCP.cs
  *
- * EDUCATIONAL IMPLEMENTATION - Group Chat Orchestration (Magentic-style)
+ * EDUCATIONAL IMPLEMENTATION - Single Agent with AIFunction Tools + MCP
  *
- * Uses WorkflowBuilder with a RoundRobinGroupChatStrategy so that
- * Architect, Developer, and Tester agents take turns collaboratively.
+ * Extends the tools pattern by also loading tools from two MCP servers:
+ * - GitHub MCP server (stdio transport via npx)
+ * - Microsoft Docs MCP server (HTTP/SSE transport)
  *
- * In Magentic orchestration the manager decides the next speaker; here
- * we approximate that with round-robin turns while honouring the
- * MaximumInvocationCount limit.
+ * Key concept: McpClient.ListToolsAsync() returns IEnumerable<AIFunction> directly,
+ * so the tools can be passed straight to AsAIAgent().
  */
 
 #nullable enable
 
 using Microsoft.Agents.AI;
-using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Client;
@@ -29,11 +28,10 @@ using System.Runtime.CompilerServices;
 namespace SKCodeAssistent.Server.Services;
 
 /// <summary>
-/// Group-chat orchestration session.  Three agents collaborate in a round-robin
-/// pattern (equivalent to the Magentic approach in Semantic Kernel).
-/// Also loads MCP tools for GitHub and Microsoft Docs.
+/// Single-agent session that combines local AIFunction tools with tools discovered
+/// from MCP servers (GitHub and Microsoft Docs).
 /// </summary>
-public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSession
+public class CodingAssistentSession_SingleAgentWithMCP : ICodingAssistentSession
 {
     private readonly WorkspaceContextService _workspaceContext;
     private readonly ILogger<CodingAssistentSession> _logger;
@@ -45,7 +43,7 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
 
     private bool _initialized;
 
-    public CodingAssistentSession_MagenticOrchestration(
+    public CodingAssistentSession_SingleAgentWithMCP(
         WorkspaceContextService workspaceContext,
         IOptions<AgentConfiguration> agentConfiguration,
         ILoggerFactory loggerFactory,
@@ -68,7 +66,10 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
         var mcpTools   = await LoadMcpToolsAsync();
         var allTools   = localTools.Concat(mcpTools).ToList();
 
-        _architectAgent = AgentDefinitions.CreateArchitectAgent(CreateChatClient());
+        var readOnlyTools = allTools.Where(t =>
+            t.Name is "read_file" or "list_files" or "file_exists" or "get_current_directory").ToList();
+
+        _architectAgent = AgentDefinitions.CreateArchitectAgent(CreateChatClient(), readOnlyTools);
         _developerAgent = AgentDefinitions.CreateDeveloperAgent(CreateChatClient(), allTools);
         _testerAgent    = AgentDefinitions.CreateTesterAgent(CreateChatClient(), allTools);
 
@@ -85,63 +86,38 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
 
         if (mode is AssistentModes.DevTeam)
         {
-            var contextualMessage =
-                $"""
-                Working in workspace: {workspacePath}
-
-                If the workspace is not set, don't attempt to write any file unless asked for.
-                You are part of a collaborative team of agents — pass requests to teammates when they are better suited.
-                Keep the discussion as short as possible; finish as early as you can.
-
-                User Request: {userMessage}
-                """;
-
-            // Round-robin: Architect → Developer → Tester (sequential edges approximate Magentic group chat).
-            // In Agent Framework GA this maps to AgentWorkflowBuilder.BuildSequential.
-            var workflow = AgentWorkflowBuilder.BuildSequential(
-                [_architectAgent!, _developerAgent!, _testerAgent!]);
-
-            StreamingRun run = await InProcessExecution.Default.RunStreamingAsync(
-                workflow, contextualMessage, null, cancellationToken);
-            await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
-
-            await foreach (var evt in run.WatchStreamAsync().WithCancellation(cancellationToken))
-            {
-                if (evt is AgentResponseUpdateEvent updateEvt)
-                    yield return new AgentMessage(
-                        updateEvt.Update.Text ?? string.Empty,
-                        updateEvt.Update.AgentId ?? updateEvt.Update.AuthorName ?? "Agent");
-            }
+            yield return new AgentMessage(
+                "Team mode is not supported in the single-agent-with-MCP implementation. Use Architect, Coder, or Tester mode.",
+                "System");
+            yield break;
         }
-        else
+
+        var contextualMessage =
+            $"""
+            Working in workspace: {workspacePath}
+
+            If the workspace is not set, don't attempt to write any file unless explicitly asked for.
+            You are working alone without a team of agents.
+
+            User Request: {userMessage}
+            """;
+
+        AIAgent? agent = mode switch
         {
-            var contextualMessage =
-                $"""
-                Working in workspace: {workspacePath}
+            AssistentModes.Architect => _architectAgent,
+            AssistentModes.Coder     => _developerAgent,
+            AssistentModes.Tester    => _testerAgent,
+            _                        => null
+        };
 
-                If the workspace is not set, don't attempt to write any file unless explicitly asked for.
-                You are working alone without a team of agents.
-
-                User Request: {userMessage}
-                """;
-
-            AIAgent? agent = mode switch
-            {
-                AssistentModes.Architect => _architectAgent,
-                AssistentModes.Coder     => _developerAgent,
-                AssistentModes.Tester    => _testerAgent,
-                _                        => null
-            };
-
-            if (agent is null)
-            {
-                yield return new AgentMessage($"Unknown agent mode: {mode}", "System");
-                yield break;
-            }
-
-            await foreach (var chunk in agent.RunStreamingAsync(contextualMessage).WithCancellation(cancellationToken))
-                yield return new AgentMessage(chunk.Text ?? string.Empty, agent.Name);
+        if (agent is null)
+        {
+            yield return new AgentMessage($"Unknown agent mode: {mode}", "System");
+            yield break;
         }
+
+        await foreach (var chunk in agent.RunStreamingAsync(contextualMessage).WithCancellation(cancellationToken))
+            yield return new AgentMessage(chunk.Text ?? string.Empty, agent.Name);
     }
 
     // -- Helpers --
@@ -158,12 +134,13 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
     {
         var tools = new List<AIFunction>();
 
+        // GitHub MCP server — tools like search_repositories, create_issue, etc.
         try
         {
             var githubClient = await McpClient.CreateAsync(
                 new StdioClientTransport(new StdioClientTransportOptions
                 {
-                    Name     = "GitHubMCP",
+                    Name    = "GitHubMCP",
                     Command  = "npx",
                     Arguments = ["-y", "@modelcontextprotocol/server-github"],
                 }));
@@ -174,6 +151,7 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
             _logger.LogWarning(ex, "Failed to load GitHub MCP tools — continuing without them.");
         }
 
+        // Microsoft Docs MCP server — tools for searching learn.microsoft.com
         try
         {
             var msDocsClient = await McpClient.CreateAsync(

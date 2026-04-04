@@ -22,19 +22,14 @@
 
     <!-- MCP (Model Context Protocol) -->
     <PackageReference Include="ModelContextProtocol" />
+
+    <!-- Agent-to-Agent (A2A) protocol -->
+    <PackageReference Include="A2A" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\SKCodeAssistent\SKCodeAssistent.ServiceDefaults\SKCodeAssistent.ServiceDefaults.csproj" />
   </ItemGroup>
 
-  <!--
-    SCHOOL_SOLUTIONS: pending migration from Semantic Kernel to Agent Framework.
-    Excluded from compilation until each file is rewritten.
-    Track progress in SCHOOL_SOLUTIONS/MIGRATION_PENDING.md
-  -->
-  <ItemGroup>
-    <Compile Remove="SCHOOL_SOLUTIONS\**\*.cs" />
-  </ItemGroup>
 
 </Project>

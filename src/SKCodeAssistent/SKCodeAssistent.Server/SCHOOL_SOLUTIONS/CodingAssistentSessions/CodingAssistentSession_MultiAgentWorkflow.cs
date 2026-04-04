@@ -1,14 +1,13 @@
 /*
- * SKCodeAssistent.Server - CodingAssistentSession_MagenticOrchestration.cs
+ * SKCodeAssistent.Server - CodingAssistentSession_MultiAgentWorkflow.cs
  *
- * EDUCATIONAL IMPLEMENTATION - Group Chat Orchestration (Magentic-style)
+ * EDUCATIONAL IMPLEMENTATION - Multi-Agent Workflow (WorkflowBuilder)
  *
- * Uses WorkflowBuilder with a RoundRobinGroupChatStrategy so that
- * Architect, Developer, and Tester agents take turns collaboratively.
+ * In DevTeam mode three agents are orchestrated sequentially:
+ *   Architect → Developer → Tester
+ * using the Agent Framework WorkflowBuilder + InProcessExecution.
  *
- * In Magentic orchestration the manager decides the next speaker; here
- * we approximate that with round-robin turns while honouring the
- * MaximumInvocationCount limit.
+ * In single-agent modes the request is routed to the appropriate agent directly.
  */
 
 #nullable enable
@@ -17,7 +16,6 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
-using ModelContextProtocol.Client;
 using OpenAI;
 using Azure.AI.OpenAI;
 using System.ClientModel;
@@ -29,11 +27,10 @@ using System.Runtime.CompilerServices;
 namespace SKCodeAssistent.Server.Services;
 
 /// <summary>
-/// Group-chat orchestration session.  Three agents collaborate in a round-robin
-/// pattern (equivalent to the Magentic approach in Semantic Kernel).
-/// Also loads MCP tools for GitHub and Microsoft Docs.
+/// Multi-agent workflow session.  In DevTeam mode an Architect → Developer → Tester
+/// pipeline is executed; in other modes a single agent handles the request.
 /// </summary>
-public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSession
+public class CodingAssistentSession_MultiAgentWorkflow : ICodingAssistentSession
 {
     private readonly WorkspaceContextService _workspaceContext;
     private readonly ILogger<CodingAssistentSession> _logger;
@@ -45,7 +42,7 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
 
     private bool _initialized;
 
-    public CodingAssistentSession_MagenticOrchestration(
+    public CodingAssistentSession_MultiAgentWorkflow(
         WorkspaceContextService workspaceContext,
         IOptions<AgentConfiguration> agentConfiguration,
         ILoggerFactory loggerFactory,
@@ -60,19 +57,18 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
         _logger = logger;
     }
 
-    public async Task InitializeAsync()
+    public Task InitializeAsync()
     {
-        if (_initialized) return;
+        if (_initialized) return Task.CompletedTask;
 
-        var localTools = BuildLocalTools();
-        var mcpTools   = await LoadMcpToolsAsync();
-        var allTools   = localTools.Concat(mcpTools).ToList();
+        var tools = BuildTools();
 
         _architectAgent = AgentDefinitions.CreateArchitectAgent(CreateChatClient());
-        _developerAgent = AgentDefinitions.CreateDeveloperAgent(CreateChatClient(), allTools);
-        _testerAgent    = AgentDefinitions.CreateTesterAgent(CreateChatClient(), allTools);
+        _developerAgent = AgentDefinitions.CreateDeveloperAgent(CreateChatClient(), tools);
+        _testerAgent    = AgentDefinitions.CreateTesterAgent(CreateChatClient(), tools);
 
         _initialized = true;
+        return Task.CompletedTask;
     }
 
     public async IAsyncEnumerable<AgentMessage> ProcessUserRequestAsync(
@@ -81,6 +77,7 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var workspacePath = _workspaceContext.WorkspacePath;
+        var activeDoc     = _workspaceContext.ActiveDocumentPath;
         _logger.LogInformation("Processing request | mode={Mode} | workspace={Workspace}", mode, workspacePath);
 
         if (mode is AssistentModes.DevTeam)
@@ -88,6 +85,7 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
             var contextualMessage =
                 $"""
                 Working in workspace: {workspacePath}
+                Active Document: {activeDoc}
 
                 If the workspace is not set, don't attempt to write any file unless asked for.
                 You are part of a collaborative team of agents — pass requests to teammates when they are better suited.
@@ -96,8 +94,7 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
                 User Request: {userMessage}
                 """;
 
-            // Round-robin: Architect → Developer → Tester (sequential edges approximate Magentic group chat).
-            // In Agent Framework GA this maps to AgentWorkflowBuilder.BuildSequential.
+            // Build a sequential Architect → Developer → Tester workflow.
             var workflow = AgentWorkflowBuilder.BuildSequential(
                 [_architectAgent!, _developerAgent!, _testerAgent!]);
 
@@ -118,6 +115,7 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
             var contextualMessage =
                 $"""
                 Working in workspace: {workspacePath}
+                Active Document: {activeDoc}
 
                 If the workspace is not set, don't attempt to write any file unless explicitly asked for.
                 You are working alone without a team of agents.
@@ -144,51 +142,12 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
         }
     }
 
-    // -- Helpers --
-
-    private List<AIFunction> BuildLocalTools()
+    private List<AIFunction> BuildTools()
     {
         var cmdPlugin  = new CommandExecutionPlugin(_workspaceContext,
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CommandExecutionPlugin>.Instance);
         var filePlugin = new FileOperationsPlugin(_workspaceContext);
         return [.. cmdPlugin.GetFunctions(), .. filePlugin.GetFunctions()];
-    }
-
-    private async Task<IEnumerable<AIFunction>> LoadMcpToolsAsync()
-    {
-        var tools = new List<AIFunction>();
-
-        try
-        {
-            var githubClient = await McpClient.CreateAsync(
-                new StdioClientTransport(new StdioClientTransportOptions
-                {
-                    Name     = "GitHubMCP",
-                    Command  = "npx",
-                    Arguments = ["-y", "@modelcontextprotocol/server-github"],
-                }));
-            tools.AddRange(await githubClient.ListToolsAsync());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to load GitHub MCP tools — continuing without them.");
-        }
-
-        try
-        {
-            var msDocsClient = await McpClient.CreateAsync(
-                new HttpClientTransport(new HttpClientTransportOptions
-                {
-                    Endpoint = new Uri("https://learn.microsoft.com/api/mcp"),
-                }));
-            tools.AddRange(await msDocsClient.ListToolsAsync());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to load MSDocs MCP tools — continuing without them.");
-        }
-
-        return tools;
     }
 
     private IChatClient CreateChatClient()

@@ -1,10 +1,9 @@
-# SCHOOL_SOLUTIONS — Migration Pending
+# SCHOOL_SOLUTIONS — Migration Complete ✅
 
-All files in this directory are **excluded from compilation** while the migration from
-Semantic Kernel → Microsoft Agent Framework GA progresses.
+All files in this directory have been **migrated from Semantic Kernel to Microsoft Agent
+Framework GA (v1.0.0)** and are included in compilation.
 
-They are preserved as-is so workshop participants can use them as reference material
-when rewriting the implementations.
+They serve as reference implementations for workshop participants.
 
 ---
 
@@ -12,14 +11,14 @@ when rewriting the implementations.
 
 | Old SK class | New Agent Framework equivalent | Status |
 |---|---|---|
-| `ChatCompletionAgent` | `AIAgent` via `IChatClient.AsAIAgent()` | ⬜ pending |
-| `Kernel` / `KernelBuilder` | `IChatClient` (MEAI abstraction) | ⬜ pending |
-| `KernelPlugin` / `KernelFunction` | `AIFunction` via `AIFunctionFactory.Create()` | ⬜ pending |
-| `AgentGroupChat` | `WorkflowBuilder` + `InProcessExecution` | ⬜ pending |
-| `MagenticOrchestration` | `WorkflowBuilder` with MagenticGroupStrategy | ⬜ pending |
+| `ChatCompletionAgent` | `AIAgent` via `IChatClient.AsAIAgent()` | ✅ done |
+| `Kernel` / `KernelBuilder` | `IChatClient` (MEAI abstraction) | ✅ done |
+| `KernelPlugin` / `KernelFunction` | `AIFunction` via `AIFunctionFactory.Create()` | ✅ done |
+| `AgentGroupChat` | `AgentWorkflowBuilder.BuildSequential()` + `InProcessExecution` | ✅ done |
+| `MagenticOrchestration` | `AgentWorkflowBuilder.BuildSequential()` (sequential pipeline) | ✅ done |
 | `IMcpClient` (SK) | `ModelContextProtocol.Client.IMcpClient` (unchanged) | ✅ same |
-| `AgentChat` streaming | `RunStreamingAsync` on `AIAgent` | ⬜ pending |
-| `ChatHistory` | Managed internally by `AIAgent` thread history | ⬜ pending |
+| `AgentChat` streaming | `RunStreamingAsync` → `AgentResponseUpdate.Text` | ✅ done |
+| `ChatHistory` | Managed internally by `AIAgent` thread history | ✅ done |
 
 ---
 
@@ -27,6 +26,7 @@ when rewriting the implementations.
 
 ```csharp
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using OpenAI;
 
@@ -41,21 +41,20 @@ AIAgent agent = chatClient.AsAIAgent(
     instructions: "You are a senior software architect...",
     tools: [AIFunctionFactory.Create(MyTool)]);
 
-// 3. Stream a response
-await foreach (string chunk in agent.RunStreamingAsync("Design a microservice"))
-    Console.Write(chunk);
+// 3. Stream a response  (chunk is AgentResponseUpdate — use .Text)
+await foreach (var chunk in agent.RunStreamingAsync("Design a microservice"))
+    Console.Write(chunk.Text);
 
 // 4. Multi-agent workflow
-var workflow = new WorkflowBuilder(agentA)
-    .AddEdge(agentA, agentB)
-    .Build();
+var workflow = AgentWorkflowBuilder.BuildSequential([agentA, agentB]);
 
-StreamingRun run = await InProcessExecution.RunStreamingAsync(workflow, userMessage);
+StreamingRun run = await InProcessExecution.Default.RunStreamingAsync(
+    workflow, userMessage, null, cancellationToken);
 await run.TrySendMessageAsync(new TurnToken(emitEvents: true));
 await foreach (WorkflowEvent evt in run.WatchStreamAsync())
 {
     if (evt is AgentResponseUpdateEvent e)
-        Console.WriteLine($"{e.ExecutorId}: {e.Data}");
+        Console.WriteLine($"{e.Update.AgentId}: {e.Update.Text}");
 }
 ```
 
