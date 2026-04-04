@@ -1,6 +1,14 @@
 # Semantic Kernel Workshop Notebooks
 
-This directory contains interactive Jupyter notebooks that guide you through learning Semantic Kernel concepts and building AI agents with C#.
+> ⚠️ **Polyglot Notebooks Deprecation Notice (February 2026)**
+>
+> Microsoft deprecated the Polyglot Notebooks VS Code extension in February 2026. The `.ipynb` C# notebooks in this directory **use the Polyglot/C# kernel** and may not work in fresh VS Code setups.
+>
+> **Recommended:** Use **[Verso](https://github.com/DataficationSDK/Verso)** as a drop-in replacement — it imports `.ipynb` files and supports the .NET kernel. Alternatively, run code samples as `.csx` scripts with `dotnet-script`.
+>
+> See the [Microsoft Agent Framework GA guide](../docs/MICROSOFT_AGENT_FRAMEWORK_GA.md#notebook-environment-polyglot-notebooks-deprecation) for full details and alternatives.
+
+This directory contains interactive notebooks that guide you through building AI agents with **Semantic Kernel** and **Microsoft Agent Framework** in C#.
 
 ## 📚 Learning Sequence
 
@@ -27,8 +35,24 @@ Work through these notebooks in order to build your understanding progressively:
 
 ### Prerequisites
 - .NET 9 SDK or later
-- Jupyter notebook environment with .NET Interactive kernel
+- **Notebook runner** — one of:
+  - [Verso](https://github.com/DataficationSDK/Verso) (recommended — open-source Polyglot replacement)
+  - Polyglot Notebooks VS Code extension (deprecated but still installable for now)
+  - `dotnet-script` for running cells as `.csx` scripts
 - AI model access (Azure OpenAI, GitHub Models, or local LLM)
+
+### Package Versions (GA)
+
+The notebooks reference these GA package versions:
+
+```
+Microsoft.SemanticKernel             1.74.0
+Microsoft.Extensions.AI             9.7.1
+Microsoft.Extensions.AI.Abstractions 9.10.0
+Azure.AI.OpenAI                      2.5.0
+```
+
+> Some notebooks may still reference older preview versions in their `#r nuget:` directives. Update them to the GA versions above for best results.
 
 ### Configuration
 1. **AI Settings**: Start with [`0-AI-settings.ipynb`](0-AI-settings.ipynb) to configure your model
