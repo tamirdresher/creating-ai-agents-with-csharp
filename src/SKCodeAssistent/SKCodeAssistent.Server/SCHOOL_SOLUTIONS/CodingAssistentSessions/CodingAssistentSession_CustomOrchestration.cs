@@ -4,11 +4,10 @@
 using Microsoft.Extensions.Options;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.Agents.Magentic;
 using Microsoft.SemanticKernel.Agents.Orchestration.GroupChat;
 using Microsoft.SemanticKernel.Agents.Runtime.InProcess;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI; // <-- Add this for OpenAIPromptExecutionSettings
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 using ModelContextProtocol.Client;
 using SKCodeAssistent.Server.Configuration;
 using SKCodeAssistent.Server.Plugins;
@@ -18,6 +17,10 @@ using System.Runtime.CompilerServices;
 
 namespace SKCodeAssistent.Server.Services;
 
+/// <summary>
+/// Custom multi-agent orchestration using GroupChatOrchestration (MAF GA pattern).
+/// Replaces the deprecated AgentGroupChat with the new orchestration APIs.
+/// </summary>
 public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSession
 {
     private readonly WorkspaceContextService _workspaceContext;
@@ -27,7 +30,6 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
     private IOptions<AgentConfiguration> _agentConfiguration;
     private Kernel? _kernel;
     private ChatHistory? _history;
-    private AgentGroupChat? _groupChat;
     private ChatCompletionAgent? _architectAgent;
     private ChatCompletionAgent? _developerAgent;
     private ChatCompletionAgent? _testerAgent;
@@ -60,12 +62,12 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
         _kernel = await InitializeKernelAsync();
         
         _history = new ChatHistory();
+        // MAF GA: Each agent gets a cloned kernel for isolation
         _architectAgent = AgentDefinitions.CreateArchitectAgent(_kernel.Clone());
         _developerAgent = AgentDefinitions.CreateDeveloperAgent(_kernel.Clone());
         _testerAgent = AgentDefinitions.CreateTesterAgent(_kernel.Clone());
-        _groupChat = new AgentGroupChat(_architectAgent, _developerAgent, _testerAgent);
-        _groupChat.ExecutionSettings.TerminationStrategy.MaximumIterations = 15;
-        _groupChat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
+        // NOTE: AgentGroupChat is deprecated in SK 1.74+ / MAF GA.
+        // Orchestration is now handled by GroupChatOrchestration in ProcessUserRequestAsync.
         _initialized = true;
     }
 
@@ -179,17 +181,18 @@ public class CodingAssistentSession_CustomOrchestration : ICodingAssistentSessio
 
     public async IAsyncEnumerable<ChatMessageContent> GetChatHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var message in _groupChat!.GetChatMessagesAsync(cancellationToken))
+        // MAF GA: Read directly from ChatHistory — no need for deprecated AgentGroupChat
+        foreach (var message in _history!)
         {
             yield return message;
         }
+        await Task.CompletedTask;
     }
 
     public void ClearChatHistory()
     {
-        _groupChat!.IsComplete = false;
         _history!.Clear();
-        _logger.LogInformation($"Chat history cleared");
+        _logger.LogInformation("Chat history cleared");
     }
 
     private async Task<Kernel> InitializeKernelAsync()

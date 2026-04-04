@@ -38,7 +38,6 @@ public class CodingAssistentSession_CustomOrchestrationWithA2A : ICodingAssisten
     private Kernel? _kernel;
     private ChatHistory? _history;
     private Agent _remoteDevAgent;
-    private AgentGroupChat? _groupChat;
     private ChatCompletionAgent? _architectAgent;
     private ChatCompletionAgent? _developerAgent;
     private ChatCompletionAgent? _testerAgent;
@@ -86,9 +85,7 @@ public class CodingAssistentSession_CustomOrchestrationWithA2A : ICodingAssisten
         var agentCard = await cardResolver.GetAgentCardAsync();
         _remoteDevAgent = new A2ARemoteAgent(new A2AAgent(_a2aClient, agentCard));
 
-        _groupChat = new AgentGroupChat(_architectAgent, _developerAgent, _testerAgent);
-        _groupChat.ExecutionSettings.TerminationStrategy.MaximumIterations = 15;
-        _groupChat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
+        // MAF GA: AgentGroupChat is deprecated — orchestration is handled by GroupChatOrchestration
         _initialized = true;
     }
 
@@ -217,17 +214,18 @@ public class CodingAssistentSession_CustomOrchestrationWithA2A : ICodingAssisten
 
     public async IAsyncEnumerable<ChatMessageContent> GetChatHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var message in _groupChat!.GetChatMessagesAsync(cancellationToken))
+        // MAF GA: Read directly from ChatHistory
+        foreach (var message in _history!)
         {
             yield return message;
         }
+        await Task.CompletedTask;
     }
 
     public void ClearChatHistory()
     {
-        _groupChat!.IsComplete = false;
         _history!.Clear();
-        _logger.LogInformation($"Chat history cleared");
+        _logger.LogInformation("Chat history cleared");
     }
 
     private async Task<Kernel> InitializeKernelAsync()
