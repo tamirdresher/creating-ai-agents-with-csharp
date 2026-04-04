@@ -2,15 +2,50 @@
 
 A comprehensive workshop for building AI applications and agents using Microsoft's Semantic Kernel framework in C#.
 
-## 🆕 What's Changed — Microsoft Agent Framework GA (July 2025)
+## 🆕 What's Changed — Microsoft Agent Framework (July 2025)
 
-Microsoft has unified Semantic Kernel and AutoGen under the **Microsoft Agent Framework (MAF)** umbrella. Here's what you need to know:
+### The Big Picture: SK → MAF Evolution
 
-- **Semantic Kernel remains the recommended way to build agents in C#.** SK Agents API reached GA at 1.45.x and is now at **1.74.0**. All notebooks and projects in this workshop are pinned to 1.74.0.
-- **Microsoft.Extensions.AI** has reached GA at **10.4.1**, providing the `IChatClient` abstraction that bridges AI providers with a common interface. Notebook 1 demonstrates this directly.
-- **Model Context Protocol (MCP)** C# SDK is now GA at **1.2.0** (was preview). Notebook 3.2 covers MCP integration.
-- **MAF-specific packages** (`Microsoft.Agents.AI.*`) are still at RC status and are **not used** in this workshop. When they reach GA, migration guidance will be added.
-- **Agent-to-Agent (A2A) Protocol** SDK remains in preview (0.3.3-preview). Notebook 6 and the A2AServer project demonstrate this protocol.
+Microsoft has unified **Semantic Kernel** and **AutoGen** under the **Microsoft Agent Framework (MAF)** umbrella — a single platform for building AI agents on .NET. Here is the key takeaway:
+
+> **Semantic Kernel is the foundation of MAF.** Everything you learn in this workshop — kernels, plugins, agents, orchestration — is the stable base that MAF builds on. There is no "start over" moment.
+
+```
+  Microsoft Agent Framework (MAF)
+  ├── AgentKernel · Declarative Agents · A2A protocol
+  ├── Semantic Kernel 1.74.0 (this workshop)
+  │   └── Kernel · Plugins · Agents API · Memory
+  └── Microsoft.Extensions.AI 10.4.1
+      └── IChatClient · Embeddings · Middleware
+```
+
+### What This Workshop Uses (Stable)
+
+| Component | Version | Status |
+|-----------|---------|--------|
+| **Semantic Kernel** | 1.74.0 | ✅ GA — all notebooks and projects pinned here |
+| **Microsoft.Extensions.AI** | 10.4.1 | ✅ GA — `IChatClient` abstraction (Notebook 1) |
+| **MCP C# SDK** | 1.2.0 | ✅ GA — Model Context Protocol (Notebook 3.2) |
+| **SK Agents API** | 1.74.0 (GA since 1.45.x) | ✅ GA — `ChatCompletionAgent`, `AgentGroupChat` |
+
+### What's Coming (Not Yet in Workshop)
+
+| Component | Version | Status |
+|-----------|---------|--------|
+| **MAF packages** (`Microsoft.Agents.AI.*`) | RC5 | ⏳ RC — will be added when GA |
+| **A2A Protocol SDK** | 0.3.3-preview | ⏳ Preview — Notebook 6 demonstrates the concepts |
+| **AgentKernel** | RC | ⏳ Higher-level multi-agent orchestrator |
+| **Declarative Agents** | RC | ⏳ JSON/YAML agent definitions |
+
+### Breaking Changes on the Horizon
+
+- `IChatClient.CompleteAsync` → `GetResponseAsync` (not yet, but planned)
+- `ChatCompletion` → `ChatResponse`
+- Planner packages (Handlebars, Stepwise) are deprecated → agent-driven orchestration replaces them
+
+### When MAF Reaches GA
+
+Workshop exercises will be updated to use MAF APIs. Your SK knowledge transfers directly — MAF adds concepts on top, it does not replace them. See the **[Microsoft Agent Framework Guide](docs/microsoft-agent-framework-guide.md)** for the full migration path.
 
 > ⚠️ **Polyglot Notebooks Deprecation Notice**: Microsoft has announced that Polyglot Notebooks support ends March 2026. The interactive `.ipynb` notebooks in this workshop still work today, but console app alternatives for all exercises are planned. The `src/SKCodeAssistent` project already serves as the primary runnable application.
 
@@ -62,6 +97,7 @@ Progressive exercises to build your skills:
 
 ## 📖 Additional Resources
 
+- **[Microsoft Agent Framework Guide](docs/microsoft-agent-framework-guide.md)** - 🆕 SK → MAF evolution, key concepts, migration path
 - **[GitHub Models Setup Guide](docs/Using_GitHub_Models.md)** - Configure GitHub marketplace models
 - **[Notebook Learning Materials](notebooks/)** - Interactive Jupyter notebooks
 - **[Assignment Solutions](docs/assignments/)** - Guided exercises
