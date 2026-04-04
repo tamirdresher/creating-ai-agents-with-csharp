@@ -1,21 +1,14 @@
-#pragma warning disable SKEXP0110 // Experimental APIs
-#pragma warning disable SKEXP0001 // Experimental APIs
-
-
 using Microsoft.Extensions.AI;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents.Chat;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using ModelContextProtocol.Client;
+using SKCodeAssistent.Server.Services;
 
 namespace SKCodeAssistent.Server.Services;
 
 /// <summary>
-/// Service for managing AI agents sessions
+/// Manages AI coding assistant sessions.
+/// Each session is created lazily on first use and cached by session ID.
 /// </summary>
 public class CodingAssistentsSessionService
 {
@@ -40,12 +33,10 @@ public class CodingAssistentsSessionService
         return session;
     }
 
-
-
     private async Task<ICodingAssistentSession> GetOrCreateSessionAsync(Guid sessionId)
     {
         using var activity = ActivitySource.StartActivity(nameof(GetOrCreateSessionAsync));
-        activity!.SetTag("SessionId", sessionId);
+        activity?.SetTag("SessionId", sessionId);
 
         var sessionTask = _sessions.GetOrAdd(sessionId, _ => CreateAndInitializeSessionAsync());
         return await sessionTask;
@@ -54,35 +45,28 @@ public class CodingAssistentsSessionService
     public ValueTask RemoveSessionAsync(Guid sessionId)
     {
         using var activity = ActivitySource.StartActivity(nameof(RemoveSessionAsync));
-        activity!.SetTag("SessionId", sessionId);
+        activity?.SetTag("SessionId", sessionId);
 
-        using (_logger.BeginScope(new Dictionary<string, object> { { "SessionId", sessionId }, { "Method", nameof(RemoveSessionAsync) } }))
-        {
-            if (_sessions.TryRemove(sessionId, out var sessionTask))
-            {
-                _logger.LogInformation($"Session {sessionId} removed and disposed");
-            }
-        }
-        
+        if (_sessions.TryRemove(sessionId, out _))
+            _logger.LogInformation("Session {SessionId} removed", sessionId);
+
         return ValueTask.CompletedTask;
     }
 
-    public async IAsyncEnumerable<ChatMessageContent> ProcessUserRequestAsync(
+    /// <summary>
+    /// Processes a user request for the given session and streams back <see cref="AgentMessage"/> chunks.
+    /// </summary>
+    public async IAsyncEnumerable<AgentMessage> ProcessUserRequestAsync(
         Guid sessionId,
         string userMessage,
         string mode,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         using var activity = ActivitySource.StartActivity(nameof(ProcessUserRequestAsync));
-        activity!.SetTag("SessionId", sessionId);
+        activity?.SetTag("SessionId", sessionId);
 
-        using (_logger.BeginScope(new Dictionary<string, object> { { "SessionId", sessionId }, { "Method", nameof(ProcessUserRequestAsync) } }))
-        {
-            var session = await GetOrCreateSessionAsync(sessionId);
-            await foreach (var msg in session.ProcessUserRequestAsync(userMessage, mode, cancellationToken))
-            {
-                yield return msg;
-            }
-        }
+        var session = await GetOrCreateSessionAsync(sessionId);
+        await foreach (var msg in session.ProcessUserRequestAsync(userMessage, mode, cancellationToken))
+            yield return msg;
     }
 }

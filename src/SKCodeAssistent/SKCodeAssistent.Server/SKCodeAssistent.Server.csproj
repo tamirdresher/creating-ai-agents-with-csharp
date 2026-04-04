@@ -1,27 +1,40 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
-	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Microsoft Agent Framework GA (replaces Semantic Kernel) -->
+    <PackageReference Include="Microsoft.Agents.AI" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" />
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.SemanticKernel" />
-		<PackageReference Include="Microsoft.SemanticKernel.Agents.A2A" />
-		<PackageReference Include="Microsoft.SemanticKernel.Agents.Core" />
-		<PackageReference Include="Microsoft.SemanticKernel.Agents.Magentic" />
-		<PackageReference Include="Microsoft.SemanticKernel.Agents.Orchestration" />
-		<PackageReference Include="Microsoft.SemanticKernel.Agents.Runtime.InProcess" />
-		<PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" />
-		<PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
-		<PackageReference Include="ModelContextProtocol" />
-	</ItemGroup>
+    <!-- Microsoft.Extensions.AI abstractions -->
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\SKCodeAssistent\SKCodeAssistent.ServiceDefaults\SKCodeAssistent.ServiceDefaults.csproj" />
-	</ItemGroup>
+    <!-- Azure OpenAI and raw OpenAI SDK -->
+    <PackageReference Include="Azure.AI.OpenAI" />
+    <PackageReference Include="OpenAI" />
 
+    <!-- MCP (Model Context Protocol) -->
+    <PackageReference Include="ModelContextProtocol" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SKCodeAssistent\SKCodeAssistent.ServiceDefaults\SKCodeAssistent.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <!--
+    SCHOOL_SOLUTIONS: pending migration from Semantic Kernel to Agent Framework.
+    Excluded from compilation until each file is rewritten.
+    Track progress in SCHOOL_SOLUTIONS/MIGRATION_PENDING.md
+  -->
+  <ItemGroup>
+    <Compile Remove="SCHOOL_SOLUTIONS\**\*.cs" />
+  </ItemGroup>
 
 </Project>
