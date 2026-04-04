@@ -42,7 +42,7 @@ IChatClient chatClient = new OpenAIClient(new ApiKeyCredential(apiKey), options)
 // The [Description] attribute populates the tool description sent to the model.
 // Parameters are described automatically from the method signature.
 
-var tools = new List<AIFunction>
+var tools = new List<AITool>
 {
     AIFunctionFactory.Create(GetCurrentTime),
     AIFunctionFactory.Create(ReadFile),
