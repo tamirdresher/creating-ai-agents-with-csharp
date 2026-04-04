@@ -2,6 +2,18 @@
 
 A comprehensive workshop for building AI applications and agents using Microsoft's Semantic Kernel framework in C#.
 
+## 🆕 What's Changed — Microsoft Agent Framework GA (July 2025)
+
+Microsoft has unified Semantic Kernel and AutoGen under the **Microsoft Agent Framework (MAF)** umbrella. Here's what you need to know:
+
+- **Semantic Kernel remains the recommended way to build agents in C#.** SK Agents API reached GA at 1.45.x and is now at **1.74.0**. All notebooks and projects in this workshop are pinned to 1.74.0.
+- **Microsoft.Extensions.AI** has reached GA at **10.4.1**, providing the `IChatClient` abstraction that bridges AI providers with a common interface. Notebook 1 demonstrates this directly.
+- **Model Context Protocol (MCP)** C# SDK is now GA at **1.2.0** (was preview). Notebook 3.2 covers MCP integration.
+- **MAF-specific packages** (`Microsoft.Agents.AI.*`) are still at RC status and are **not used** in this workshop. When they reach GA, migration guidance will be added.
+- **Agent-to-Agent (A2A) Protocol** SDK remains in preview (0.3.3-preview). Notebook 6 and the A2AServer project demonstrate this protocol.
+
+> ⚠️ **Polyglot Notebooks Deprecation Notice**: Microsoft has announced that Polyglot Notebooks support ends March 2026. The interactive `.ipynb` notebooks in this workshop still work today, but console app alternatives for all exercises are planned. The `src/SKCodeAssistent` project already serves as the primary runnable application.
+
 ## 📚 Workshop Overview
 
 This workshop teaches you how to create intelligent AI agents that can collaborate as a software development team. You'll learn to build an AI Coding Assistant capable of performing complex software development tasks through multi-agent orchestration.

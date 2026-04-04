@@ -1,9 +1,9 @@
 # AI Agents Bootcamp in C# 
 
 ----------------Part 1 - 30 min + 30 min ex ---------------------------------
-* Microsoft AI Extensions
-* Agents
-* Semantic Kernel
+* Microsoft AI Extensions (Microsoft.Extensions.AI 10.4.1 GA — IChatClient abstraction)
+* Agents — Microsoft Agent Framework landscape (SK, MAF, AutoGen)
+* Semantic Kernel (1.74.0 GA)
 	Kernel Creation
 	Model - Local and Azure Foundry
 	Simple Agent
@@ -14,9 +14,9 @@
 ----------------Part 1 - 30 min + 30 min ex ---------------------------------
 
 ----------------Part 2 - 30 min + 30 min ex ---------------------------------
-* Tracing and Debugging
+* Tracing and Debugging (OpenTelemetry integration)
 * Function calling and Plugins 
-* MCP  
+* MCP (Model Context Protocol — now GA 1.2.0)
 	* Client and Server
 	* Stdio and Streaming
 	* How to publish
