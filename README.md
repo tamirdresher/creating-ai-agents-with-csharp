@@ -1,6 +1,44 @@
-# Creating AI Applications and Agents with C# - Semantic Kernel C# Workshop
+# Creating AI Applications and Agents with C# - Semantic Kernel & Microsoft Agent Framework Workshop
 
-A comprehensive workshop for building AI applications and agents using Microsoft's Semantic Kernel framework in C#.
+A comprehensive workshop for building AI applications and agents using Microsoft's Semantic Kernel framework and the new **Microsoft Agent Framework** in C#.
+
+## 🚀 What's New — Microsoft Agent Framework GA (.NET 10)
+
+> **April 2025**: [Microsoft Agent Framework has reached General Availability](https://github.com/microsoft/agent-framework) alongside **.NET 10**!  
+> This is a major milestone: a unified, multi-language (C# + Python) framework for building, orchestrating, and deploying AI agents.
+
+### Key GA Highlights
+| Feature | Detail |
+|---------|--------|
+| **Package** | `dotnet add package Microsoft.Agents.AI` |
+| **GitHub** | [github.com/microsoft/agent-framework](https://github.com/microsoft/agent-framework) |
+| **Docs** | [learn.microsoft.com/agent-framework](https://learn.microsoft.com/en-us/agent-framework/) |
+| **.NET 10** | Framework requires .NET 10 SDK (this repo updated from .NET 9) |
+| **Providers** | OpenAI, Azure OpenAI (Foundry), Anthropic, Ollama, Google Gemini |
+| **Graph Workflows** | Streaming, checkpointing, HITL, time-travel |
+| **MCP** | `ModelContextProtocol` 1.1.0 — now **stable** (was 0.5.0-preview) |
+| **Extensions.AI** | `Microsoft.Extensions.AI` 10.4.0 — GA in .NET 10 (was 9.x preview) |
+| **A2A** | A2A protocol 0.3.4-preview |
+
+#### Quick Hello Agent (new MS Agent Framework style)
+```csharp
+// dotnet add package Microsoft.Agents.AI.OpenAI
+using Microsoft.Agents.AI;
+using OpenAI;
+
+var agent = new OpenAIClient("<apikey>")
+    .GetResponsesClient("gpt-4o-mini")
+    .AsAIAgent(name: "HaikuBot", instructions: "You are an upbeat assistant.");
+
+Console.WriteLine(await agent.RunAsync("Write a haiku about AI agents."));
+```
+
+### Relationship: Semantic Kernel vs Microsoft Agent Framework
+- **Semantic Kernel** (what most notebooks use) — stays GA, rich plugin/function ecosystem, orchestration agents. Still the recommended path for complex enterprise agents.
+- **Microsoft Agent Framework** — new unified surface on top of `Microsoft.Extensions.AI`. Simpler API, multi-language, better for quick agent creation and graph-based workflows. Internally still uses SK for vector stores and plugins.
+- Both complement each other. Workshop now covers both.
+
+---
 
 ## 📚 Workshop Overview
 
@@ -10,6 +48,8 @@ This workshop teaches you how to create intelligent AI agents that can collabora
 
 ### 📓 Interactive Notebooks
 Hands-on learning materials covering core concepts:
+
+> **Note on Notebooks**: These use [Polyglot Notebooks](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode) (VS Code extension). Install the extension and select **.NET Interactive** kernel. See [notebooks/README.md](notebooks/README.md) for full setup and current status.
 
 - **[Introduction to Semantic Kernel](notebooks/1-SemanticKernel-Intro.ipynb)** - Get started with SK basics
 - **[Semantic Kernel Agents](notebooks/2-SemanticKernel-Agents.ipynb)** - Building intelligent agents
@@ -41,17 +81,31 @@ Progressive exercises to build your skills:
 
 ## 🚀 Quick Start
 
-1. **Prerequisites**: .NET 9 SDK, Node.js 18+, AI model access
+1. **Prerequisites**: **.NET 10 SDK**, Node.js 18+, AI model access
 2. **Configuration**: Set up your AI model credentials
 3. **Run**: Start the Aspire Host project to launch the backend
 4. **Explore**: Work through the notebooks and assignments
 
 👉 **[See complete setup instructions](docs/README.md#-quick-start)**
 
+## 📦 Package Versions (Updated for .NET 10 GA)
+
+| Package | Version | Notes |
+|---------|---------|-------|
+| `Microsoft.SemanticKernel` | 1.68.0 | Latest stable |
+| `Microsoft.Agents.AI` | 1.0.0 | 🆕 MS Agent Framework GA |
+| `Microsoft.Extensions.AI` | 10.4.0 | 🆕 GA with .NET 10 |
+| `ModelContextProtocol` | 1.1.0 | 🆕 Stable release |
+| `A2A` / `A2A.AspNetCore` | 0.3.4-preview | Updated |
+| `Microsoft.AspNetCore.OpenApi` | 10.0.0 | 🆕 GA (was 9-preview) |
+| `Azure.AI.OpenAI` | 2.9.0-beta.1 | Updated |
+| `Azure.AI.Projects` | 2.0.0 | 🆕 Foundry GA |
+
 ## 📖 Additional Resources
 
+- **[Microsoft Agent Framework GitHub](https://github.com/microsoft/agent-framework)** - 🆕 GA source & samples
+- **[MS Agent Framework Docs](https://learn.microsoft.com/en-us/agent-framework/)** - Official documentation
+- **[Migration from SK](https://learn.microsoft.com/en-us/agent-framework/migration-guide/from-semantic-kernel)** - Migrate from Semantic Kernel
 - **[GitHub Models Setup Guide](docs/Using_GitHub_Models.md)** - Configure GitHub marketplace models
-- **[Notebook Learning Materials](notebooks/)** - Interactive Jupyter notebooks
+- **[Notebook Learning Materials](notebooks/)** - Interactive Polyglot Notebooks
 - **[Assignment Solutions](docs/assignments/)** - Guided exercises
-
-
