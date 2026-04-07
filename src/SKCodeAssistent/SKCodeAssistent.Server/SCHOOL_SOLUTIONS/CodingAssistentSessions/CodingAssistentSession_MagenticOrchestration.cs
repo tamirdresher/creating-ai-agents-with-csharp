@@ -82,7 +82,6 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
     // Core AI components
     private Kernel? _kernel;
     private ChatHistory? _history;
-    private AgentGroupChat? _groupChat;
     
     // Specialized agents for different development roles
     private ChatCompletionAgent? _architectAgent;
@@ -140,12 +139,8 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
         _developerAgent = AgentDefinitions.CreateDeveloperAgent(_kernel.Clone());
         _testerAgent = AgentDefinitions.CreateTesterAgent(_kernel.Clone());
         
-        // Create an agent group chat for coordinated multi-agent interactions
-        _groupChat = new AgentGroupChat(_architectAgent, _developerAgent, _testerAgent);
-        
-        // Configure termination strategy to prevent runaway conversations
-        _groupChat.ExecutionSettings.TerminationStrategy.MaximumIterations = 15;
-        _groupChat.ExecutionSettings.TerminationStrategy.AutomaticReset = true;
+        // MAF GA: AgentGroupChat is deprecated in SK 1.74+.
+        // MagenticOrchestration handles coordination directly in ProcessUserRequestAsync.
         
         _initialized = true;
     }
@@ -297,21 +292,21 @@ public class CodingAssistentSession_MagenticOrchestration : ICodingAssistentSess
     /// <returns>Async enumerable of chat messages from the conversation history</returns>
     public async IAsyncEnumerable<ChatMessageContent> GetChatHistoryAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        await foreach (var message in _groupChat!.GetChatMessagesAsync(cancellationToken))
+        // MAF GA: Read directly from ChatHistory — no deprecated AgentGroupChat needed
+        foreach (var message in _history!)
         {
             yield return message;
         }
+        await Task.CompletedTask;
     }
 
     /// <summary>
-    /// Clears the chat history and resets the group chat state.
-    /// This method is useful for starting fresh conversations or managing memory usage.
+    /// Clears the chat history and resets state.
     /// </summary>
     public void ClearChatHistory()
     {
-        _groupChat!.IsComplete = false;
         _history!.Clear();
-        _logger.LogInformation($"Chat history cleared");
+        _logger.LogInformation("Chat history cleared");
     }
 
     /// <summary>

@@ -1,9 +1,20 @@
 # AI Agents Bootcamp in C# 
 
+## 🌍 Industry Context — Where This Is Going
+
+Microsoft's agent ecosystem is converging under the **Microsoft Agent Framework (MAF)**:
+- **SK (Semantic Kernel)** is the stable foundation — everything in this bootcamp
+- **MAF** adds `AgentKernel`, declarative agents, and standardized A2A communication on top of SK
+- **MAF packages are RC5** — not GA yet. This bootcamp uses stable SK 1.74.0 so exercises work reliably
+- When MAF reaches GA (with .NET 10), the patterns you learn here carry forward directly
+- See [Microsoft Agent Framework Guide](docs/microsoft-agent-framework-guide.md) for the full picture
+
+---
+
 ----------------Part 1 - 30 min + 30 min ex ---------------------------------
-* Microsoft AI Extensions
-* Agents
-* Semantic Kernel
+* Microsoft AI Extensions (Microsoft.Extensions.AI 10.4.1 GA — IChatClient abstraction)
+* Agents — Microsoft Agent Framework landscape (SK, MAF, AutoGen)
+* Semantic Kernel (1.74.0 GA)
 	Kernel Creation
 	Model - Local and Azure Foundry
 	Simple Agent
@@ -14,9 +25,9 @@
 ----------------Part 1 - 30 min + 30 min ex ---------------------------------
 
 ----------------Part 2 - 30 min + 30 min ex ---------------------------------
-* Tracing and Debugging
+* Tracing and Debugging (OpenTelemetry integration)
 * Function calling and Plugins 
-* MCP  
+* MCP (Model Context Protocol — now GA 1.2.0)
 	* Client and Server
 	* Stdio and Streaming
 	* How to publish
