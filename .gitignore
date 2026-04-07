@@ -429,3 +429,7 @@ Thumbs.db
 staticwebassets/
 wwwroot/_framework/
 notebooks/config/settings.json
+
+# Environment files with secrets
+.env
+

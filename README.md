@@ -28,14 +28,14 @@ Microsoft has unified **Semantic Kernel** and **AutoGen** under the **Microsoft 
 | **MCP C# SDK** | 1.2.0 | ✅ GA — Model Context Protocol (Notebook 3.2) |
 | **SK Agents API** | 1.74.0 (GA since 1.45.x) | ✅ GA — `ChatCompletionAgent`, `AgentGroupChat` |
 
-### What's Coming (Not Yet in Workshop)
+### What's New — Console Samples Added
 
 | Component | Version | Status |
 |-----------|---------|--------|
-| **MAF packages** (`Microsoft.Agents.AI.*`) | RC5 | ⏳ RC — will be added when GA |
-| **A2A Protocol SDK** | 0.3.3-preview | ⏳ Preview — Notebook 6 demonstrates the concepts |
-| **AgentKernel** | RC | ⏳ Higher-level multi-agent orchestrator |
-| **Declarative Agents** | RC | ⏳ JSON/YAML agent definitions |
+| **MAF packages** (`Microsoft.Agents.AI.*`) | 1.0.0 | ✅ GA — console samples 01-08 use these |
+| **MAF Workflows** (`Microsoft.Agents.AI.Workflows`) | 1.0.0 | ✅ GA — samples 04, 07 demonstrate workflows |
+| **A2A Protocol** | Conceptual | 📋 Sample 05 demonstrates the pattern |
+| **MCP C# SDK** (`ModelContextProtocol`) | 0.4.0-preview | ✅ Sample 03 demonstrates MCP integration |
 
 ### Breaking Changes on the Horizon
 
@@ -76,6 +76,22 @@ A complete AI coding assistant implementation with:
 - **Multi-Agent System** - Architect, Developer, and Tester agents working together
 
 👉 **[View detailed project documentation](docs/README.md)**
+
+### 🖥️ Console Samples (NEW — Microsoft Agent Framework GA)
+Standalone console apps demonstrating MAF concepts — no notebooks required:
+
+| # | Sample | Topic |
+|---|--------|-------|
+| 01 | [BasicAgent](src/samples/01-BasicAgent/) | Create an AIAgent, stream responses |
+| 02 | [AgentWithTools](src/samples/02-AgentWithTools/) | Function tools with `AIFunctionFactory` |
+| 03 | [MCPAgent](src/samples/03-MCPAgent/) | Model Context Protocol integration |
+| 04 | [MultiAgentWorkflow](src/samples/04-MultiAgentWorkflow/) | Sequential agent pipeline with workflows |
+| 05 | [A2AProtocol](src/samples/05-A2AProtocol/) | Agent-to-Agent communication |
+| 06 | [HITL](src/samples/06-HITL/) | Human-in-the-Loop approval gates |
+| 07 | [WorkflowFramework](src/samples/07-WorkflowFramework/) | Custom executors and workflow graphs |
+| 08 | [Guardrails](src/samples/08-Guardrails/) | Input/output safety validation |
+
+👉 **[View all console samples](src/samples/README.md)**
 
 ### 📝 Assignments
 Progressive exercises to build your skills:
