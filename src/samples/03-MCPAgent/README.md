@@ -4,7 +4,7 @@ Connect an agent to external tools via the Model Context Protocol standard.
 
 ## What You'll Learn
 
-- Connecting to MCP servers using `McpClientFactory.CreateAsync()`
+- Connecting to MCP servers using `McpClient.CreateAsync()`
 - Listing and using tools from MCP servers
 - Passing MCP tools to an `AIAgent`
 
@@ -12,7 +12,7 @@ Connect an agent to external tools via the Model Context Protocol standard.
 
 | API | Purpose |
 |-----|---------|
-| `McpClientFactory.CreateAsync()` | Connects to an MCP server |
+| `McpClient.CreateAsync()` | Connects to an MCP server |
 | `mcpClient.ListToolsAsync()` | Discovers available MCP tools |
 | MCP tools as `AITool` | MCP tools integrate directly with agents |
 

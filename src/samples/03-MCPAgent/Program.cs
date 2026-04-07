@@ -21,7 +21,7 @@ using DotNetEnv;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
-using ModelContextProtocol.Configuration;
+using ModelContextProtocol.Protocol;
 using OpenAI;
 using OpenAI.Chat;
 using System.ClientModel;
@@ -48,18 +48,13 @@ IChatClient chatClient = new OpenAIClient(new ApiKeyCredential(apiKey), options)
 // Replace with any MCP server (GitHub, filesystem, etc.).
 Console.WriteLine("Connecting to MCP server...");
 
-await using var mcpClient = await McpClientFactory.CreateAsync(
-    new McpServerConfig
+await using var mcpClient = await McpClient.CreateAsync(
+    new StdioClientTransport(new()
     {
-        Id = "everything",
+        Command = "npx",
+        Arguments = ["-y", "@modelcontextprotocol/server-everything"],
         Name = "Everything",
-        TransportType = "stdio",
-        TransportOptions = new Dictionary<string, string>
-        {
-            ["command"] = "npx",
-            ["arguments"] = "-y @modelcontextprotocol/server-everything"
-        }
-    });
+    }));
 
 // ── List MCP tools ──────────────────────────────────────────────────────────
 var mcpTools = await mcpClient.ListToolsAsync();

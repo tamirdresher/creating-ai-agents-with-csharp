@@ -78,9 +78,10 @@ var userInput = Console.ReadLine()
 Console.WriteLine();
 
 // Start the streaming workflow execution
+var messages = new List<ChatMessage> { new(ChatRole.User, userInput) };
 await using StreamingRun run = await InProcessExecution.RunStreamingAsync(
     workflow,
-    [new ChatMessage(ChatRole.User, userInput)]);
+    messages);
 
 // TurnToken triggers the agent executors to begin processing
 await run.TrySendMessageAsync(new TurnToken(emitEvents: true));

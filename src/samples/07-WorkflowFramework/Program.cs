@@ -26,7 +26,6 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Workflows;
 using Microsoft.Extensions.AI;
 using OpenAI;
-using OpenAI.Chat;
 using System.ClientModel;
 
 // ── Config ───────────────────────────────────────────────────────────────────
